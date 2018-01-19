@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
         }
 
         process.start("objdump", {"-j", ".text", "-C", "-d", inputFile});
-        process.waitForFinished();
+        process.waitForFinished(-1);
 
         if ( (process.exitStatus() != QProcess::NormalExit) || process.exitCode() ) {
             std::cerr << "Cannot generate an objdump\n" << std::endl;
