@@ -2,6 +2,7 @@
 
 #include <QIODevice>
 #include <QTextStream>
+#include <QDateTime>
 
 static ScName removePrefix(const ScName &name)
 {
@@ -35,9 +36,16 @@ void PlantUmlGenerator::generate(QIODevice &output, const ScName &stmName)
     QTextStream cout(&output);
 
     cout << "@startuml\n";
+    addWelcomeNote(cout, stmName);
     generate(cout, stmName, 0);
     cout << "@enduml\n";
     cout.flush();
+}
+
+void PlantUmlGenerator::addWelcomeNote(QTextStream &cout, const ScName &stmName)
+{
+    cout << "note \"" << stmName << "\\nGenerated on "
+         << QDateTime::currentDateTime().toString("dd.MM.yyyy") << "\" as NoteGenerated #A2F2A2\n";
 }
 
 void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int indentLevel)
@@ -46,7 +54,11 @@ void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int inde
     const auto &nameAlias = alias(name);
 
     QByteArray indent(indentLevel * 2, ' ');
-    beginState(cout, indent, name, nameAlias);
+
+    // Exclude the outerbox with a state machine name:
+    if ( indentLevel > 0 ) {
+        beginState(cout, indent, name, nameAlias);
+    }
 
     // Substates:
     const auto nrOrthRegions = state.substates.size();
@@ -62,7 +74,9 @@ void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int inde
         }
     }
 
-    endState(cout, indent);
+    if ( indentLevel > 0 ) {
+        endState(cout, indent);
+    }
 
     // Deferrals:
     if ( !state.deferrals.empty() ) {

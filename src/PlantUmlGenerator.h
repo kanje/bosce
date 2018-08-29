@@ -13,6 +13,7 @@ public:
     void generate(QIODevice &output, const ScName &stmName) override;
 
 private:
+    void addWelcomeNote(QTextStream &cout, const ScName &stmName);
     void generate(QTextStream &cout, const ScName &name, int indentLevel);
     const ScName &alias(const ScName &name);
 
