@@ -1,7 +1,16 @@
-cmake_minimum_required(VERSION 3.3)
-project(bosce)
+##
+## Boost StateChart Extractor
+##
+## Distributed under the Boost Software License, Version 1.0.
+## (See accompanying file LICENSE or copy at
+##                      http://www.boost.org/LICENSE_1_0.txt)
+##
 
-find_package(Qt5 QUIET REQUIRED Core CONFIG NO_CMAKE_PACKAGE_REGISTRY)
+cmake_minimum_required(VERSION 3.3)
+project(bosce CXX)
+
+find_package(Qt5 REQUIRED COMPONENTS Core CONFIG)
+find_package(Boost REQUIRED COMPONENTS program_options)
 
 # Compile with these options:
 add_compile_options(
@@ -43,4 +52,12 @@ target_compile_features(bosce
 target_link_libraries(bosce
   PUBLIC
     Qt5::Core
+    ${Boost_LIBRARIES}
+)
+
+# Add these files to IDE:
+add_custom_target(extra-files
+  SOURCES
+    README.md
+    LICENSE
 )

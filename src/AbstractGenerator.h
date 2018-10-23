@@ -12,6 +12,7 @@ public:
         , m_highlightSet(highlightSet)
     {
     }
+    virtual ~AbstractGenerator() = default;
 
     virtual void generate(QIODevice &output, const ScName &stmName) = 0;
 
