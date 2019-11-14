@@ -49,6 +49,9 @@ using ScStateMap = QMap<ScName, ScState>;
 class ScModel final
 {
 public:
+    static const ScName RootScName;
+
+public:
     void addStateMachine(const ScName &name, const ScName &initialState);
     void addState(const ScName &name, const ScName &parent, int orthRegion, const ScNameList &initialSubstates);
     void addTransition(const ScName &target, const ScName &event);

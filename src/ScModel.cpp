@@ -1,9 +1,11 @@
 #include "ScModel.h"
 
+const ScName ScModel::RootScName = "[root]";
+
 void ScModel::addStateMachine(const ScName &name, const ScName &initialState)
 {
     if ( !m_states.contains(name) ) {
-        addState(name, "", 0, {initialState});
+        addState(name, RootScName, 0, {initialState});
     }
 }
 
