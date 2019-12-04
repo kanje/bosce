@@ -4,8 +4,7 @@
 
 class QTextStream;
 
-class PlantUmlGenerator final
-        : public AbstractGenerator
+class PlantUmlGenerator final : public AbstractGenerator
 {
     using AbstractGenerator::AbstractGenerator;
 
@@ -18,7 +17,8 @@ private:
     const ScName &alias(const ScName &name);
 
 private:
-    void beginState(QTextStream &cout, QByteArray &indent, const ScName &name, const ScName &nameAlias);
+    void beginState(QTextStream &cout, QByteArray &indent, const ScName &name,
+                    const ScName &nameAlias);
     void endState(QTextStream &cout, QByteArray &indent);
     void deferralLink(QTextStream &cout, QByteArray &indent, const ScName &stateAlias,
                       const ScName &eventName);

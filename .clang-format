@@ -1,0 +1,122 @@
+# disable formatting with // clang-format off
+# enable formatting with  // clang-format on
+
+Language: Cpp
+Standard: Cpp11
+
+# --- Indentation
+
+TabWidth: 4
+
+UseTab: Never
+
+IndentCaseLabels: false
+
+IndentWidth: 4
+
+IndentWrappedFunctionNames: false
+
+ConstructorInitializerIndentWidth: 4
+
+ContinuationIndentWidth: 4
+
+AccessModifierOffset: -4 # how far e.g public is indented
+
+NamespaceIndentation: None
+
+# --- Braces
+
+BreakBeforeBraces: Custom
+
+BraceWrapping: {
+    AfterClass: 'true'
+    AfterControlStatement: 'false'
+    AfterEnum : 'true'
+    AfterFunction : 'true'
+    AfterNamespace : 'false'
+    AfterStruct : 'true'
+    AfterUnion : 'true'
+    BeforeCatch : 'false'
+    BeforeElse : 'false'
+    IndentBraces : 'false'
+}
+
+AllowShortBlocksOnASingleLine: false # if (1) {return;}
+
+AllowShortCaseLabelsOnASingleLine: false # case: break;
+
+AllowShortFunctionsOnASingleLine: false # None, Empty, Inline
+
+AllowShortIfStatementsOnASingleLine: false
+
+AllowShortLoopsOnASingleLine: false
+
+Cpp11BracedListStyle: true
+
+# --- Whitespace
+
+SpaceBeforeAssignmentOperators: true
+
+SpaceBeforeParens: ControlStatements
+
+SpaceInEmptyParentheses: false
+
+SpacesBeforeTrailingComments: 1
+
+SpacesInAngles: false
+
+SpacesInCStyleCastParentheses: false
+
+SpacesInParentheses: false
+
+SpacesInSquareBrackets: false
+
+MaxEmptyLinesToKeep: 3
+
+# --- Breaks, alignment & reflow
+
+PenaltyBreakBeforeFirstCallParameter: 200
+
+AlignAfterOpenBracket: Align
+
+AlignConsecutiveAssignments: false
+
+AlignConsecutiveDeclarations: false
+
+AlignEscapedNewlinesLeft: false
+
+AlignOperands: false
+
+AlignTrailingComments: true
+
+AllowAllParametersOfDeclarationOnNextLine: false
+
+AlwaysBreakAfterReturnType: None
+
+AlwaysBreakBeforeMultilineStrings: true
+
+AlwaysBreakTemplateDeclarations: true
+
+BinPackArguments: true
+
+BinPackParameters: true
+
+BreakBeforeBinaryOperators: NonAssignment
+
+BreakBeforeTernaryOperators: false
+
+BreakConstructorInitializersBeforeComma: true
+
+ColumnLimit: 100
+
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+PointerAlignment: Right
+
+ReflowComments: true
+
+# --- Other
+
+SortIncludes: true
+ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
+

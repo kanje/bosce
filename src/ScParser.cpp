@@ -1,6 +1,6 @@
 #include "ScParser.h"
-#include "ScModel.h"
 #include "ParserHelpers.h"
+#include "ScModel.h"
 
 #include <iostream>
 
@@ -10,21 +10,19 @@ ScParser::ScParser(ScModel &model)
 {
 }
 
-template<std::size_t N>
+template <std::size_t N>
 inline bool expectStartsWith(char *&data, const char (&prefix)[N])
 {
     return expectString(data, prefix);
 }
 
-template<std::size_t N>
+template <std::size_t N>
 inline bool expectEndsWith(const char *start, char *end, const char (&suffix)[N])
 {
     const std::size_t dataLen = end - start;
     const std::size_t suffixLen = N - 1;
-    if ( dataLen >= suffixLen )
-    {
-        if ( eqString(end - suffixLen, suffix) )
-        {
+    if (dataLen >= suffixLen) {
+        if (eqString(end - suffixLen, suffix)) {
             end[-suffixLen] = '\0';
             return true;
         }
@@ -37,19 +35,19 @@ inline char *matchAngleArgument(char *&data, bool skipToEnd = false)
     char *start = data;
     int nrAngles = 1;
 
-    for(;;) {
-        switch ( *data ) {
+    for (;;) {
+        switch (*data) {
         case ',':
-            if ( !skipToEnd && (nrAngles == 1) ) {
+            if (!skipToEnd && (nrAngles == 1)) {
                 *(data++) = '\0';
-                if ( *data == ' ' ) {
+                if (*data == ' ') {
                     ++data;
                 }
                 return start;
             }
             break;
         case '>':
-            if ( !--nrAngles ) {
+            if (!--nrAngles) {
                 *(data++) = '\0';
                 return start;
             }
@@ -74,14 +72,14 @@ void ScParser::parseFunctionDecl(char *&data)
     //                     boost::statechart::deferral< * event-name * >,
     //                     mpl_::na, ..., mpl_::na> >(boost::statechart::event_base const&, void const*)>
 
-    if ( expectStartsWith(data, "boost::statechart::") ) {
+    if (expectStartsWith(data, "boost::statechart::")) {
         expectStartsWith(data, "detail::reaction_result boost::statechart::");
         // boost::statechart::state_machine<fsm::StateMachine, fsm::NotStarted, ...
-        if ( expectStartsWith(data, "state_machine<") ) {
+        if (expectStartsWith(data, "state_machine<")) {
             parseStateMachine(data);
         } else
-        // boost::statechart::simple_state<fsm::NotStarted, fsm::StateMachine, ...
-        if ( expectStartsWith(data, "simple_state<") ) {
+            // boost::statechart::simple_state<fsm::NotStarted, fsm::StateMachine, ...
+            if (expectStartsWith(data, "simple_state<")) {
             parseSimpleState(data);
         }
     } else {
@@ -91,7 +89,7 @@ void ScParser::parseFunctionDecl(char *&data)
 
 void ScParser::parseFunctionCall(char *&data)
 {
-    if ( !m_hasCurrentState ) {
+    if (!m_hasCurrentState) {
         return;
     }
 
@@ -99,14 +97,14 @@ void ScParser::parseFunctionCall(char *&data)
     //     boost::statechart::simple_state<...>::transit<*state-name*>()
 
     expectStartsWith(data, "boost::statechart::detail::safe_reaction_result ");
-    if ( expectStartsWith(data, "boost::statechart::simple_state<") ) {
+    if (expectStartsWith(data, "boost::statechart::simple_state<")) {
         matchAngleArgument(data, true);
-        if ( expectStartsWith(data, "::transit<") ) {
+        if (expectStartsWith(data, "::transit<")) {
             QByteArray target = matchAngleArgument(data);
             m_model.addTransition(target, m_currentEvent);
-        } else if ( expectStartsWith(data, "::discard_event()") ) {
+        } else if (expectStartsWith(data, "::discard_event()")) {
             m_model.addTransition(m_currentState, m_currentEvent);
-        } else if ( expectStartsWith(data, "::defer_event()") ) {
+        } else if (expectStartsWith(data, "::defer_event()")) {
             m_model.addDeferral(m_currentEvent);
         }
     }
@@ -124,18 +122,19 @@ static ScNameList parseInitialSubstateList(char *mplList)
 {
     ScNameList list;
 
-    if ( expectStartsWith(mplList, "boost::mpl::list") ) {
+    if (expectStartsWith(mplList, "boost::mpl::list")) {
         expectAddress(mplList);
-        if ( !expectString(mplList, "<") ) {
+        if (!expectString(mplList, "<")) {
             return list;
         }
 
-        forever {
+        forever
+        {
             char *substate = matchAngleArgument(mplList);
-            if ( !substate ) { // end of list
+            if (!substate) { // end of list
                 break;
             }
-            if ( expectStartsWith(substate, "mpl_::na") ) { // default values started
+            if (expectStartsWith(substate, "mpl_::na")) { // default values started
                 break;
             }
 
@@ -153,29 +152,31 @@ void ScParser::parseReactionList(char *mplList)
     /*
      * ::local_react<boost::mpl::list<boost::statechart::custom_reaction< *event-name* >,
      *                                boost::statechart::deferral< * event-name * >,
-     *                                mpl_::na, ..., mpl_::na> >(boost::statechart::event_base const&, void const*)>
+     *                                mpl_::na, ..., mpl_::na> >(boost::statechart::event_base
+     * const&, void const*)>
      */
 
-    if ( expectStartsWith(mplList, "boost::mpl::list") ) {
+    if (expectStartsWith(mplList, "boost::mpl::list")) {
         expectAddress(mplList);
-        if ( !expectString(mplList, "<") ) {
+        if (!expectString(mplList, "<")) {
             return;
         }
 
-        forever {
+        forever
+        {
             char *reaction = matchAngleArgument(mplList);
-            if ( !reaction ) {
+            if (!reaction) {
                 break;
             }
-            if ( expectStartsWith(reaction, "mpl_::na") ) { // default values started
+            if (expectStartsWith(reaction, "mpl_::na")) { // default values started
                 break;
             }
 
-            if ( expectStartsWith(reaction, "boost::statechart::transition<") ) {
+            if (expectStartsWith(reaction, "boost::statechart::transition<")) {
                 QByteArray event = matchAngleArgument(reaction);
                 QByteArray target = matchAngleArgument(reaction);
                 m_model.addTransition(target, event);
-            } else if ( expectStartsWith(reaction, "boost::statechart::deferral<") ) {
+            } else if (expectStartsWith(reaction, "boost::statechart::deferral<")) {
                 QByteArray event = matchAngleArgument(reaction);
                 m_model.addDeferral(event);
             }
@@ -208,22 +209,21 @@ void ScParser::parseSimpleState(char *&data)
     ScName parent = matchAngleArgument(data);
     int orthRegion = 0;
 
-    if ( isOrthogonalState ) {
+    if (isOrthogonalState) {
         matchAngleArgument(data, true); // skip to ::orthogonal
-        if ( !expectStartsWith(data, "::orthogonal<(unsigned char)") ) {
+        if (!expectStartsWith(data, "::orthogonal<(unsigned char)")) {
             return;
         }
         orthRegion = std::atoi(data);
         matchAngleArgument(data, true); // skip to ','
-        matchAngleArgument(data); // skip to a list of initial substates
+        matchAngleArgument(data);       // skip to a list of initial substates
     }
 
-    m_model.addState(name, parent, orthRegion,
-                     parseInitialSubstateList(matchAngleArgument(data)));
+    m_model.addState(name, parent, orthRegion, parseInitialSubstateList(matchAngleArgument(data)));
 
     matchAngleArgument(data, true); // skip history_mode
 
-    if ( expectStartsWith(data, "::local_react<") ) {
+    if (expectStartsWith(data, "::local_react<")) {
         parseReactionList(matchAngleArgument(data));
     }
 }
@@ -232,27 +232,27 @@ inline char *matchName(char *&data, char terminus)
 {
     char *start = data;
 
-    for ( int nrAngles = 0; *data; ++data ) {
-        if ( isalnum(*data) || (*data == ':') || (*data == '_') ) {
+    for (int nrAngles = 0; *data; ++data) {
+        if (isalnum(*data) || (*data == ':') || (*data == '_')) {
             continue;
         }
-        if ( *data == '<' ) {
+        if (*data == '<') {
             ++nrAngles;
             continue;
         }
-        if ( (*data == '>') && (nrAngles > 0) ){
+        if ((*data == '>') && (nrAngles > 0)) {
             --nrAngles;
             continue;
         }
-        if ( nrAngles == 0 ) {
+        if (nrAngles == 0) {
             break;
         }
     }
 
-    if ( *data != terminus ) {
+    if (*data != terminus) {
         return nullptr;
     }
-    if ( *data == '\0' ) {
+    if (*data == '\0') {
         return start;
     }
     *(data++) = '\0';
@@ -266,16 +266,16 @@ void ScParser::parseReactMethod(char *&data)
      */
 
     char *function = matchName(data, '(');
-    if ( !function ) {
+    if (!function) {
         return;
     }
-    if ( !expectEndsWith(function, data - 1, "::react") ) {
+    if (!expectEndsWith(function, data - 1, "::react")) {
         return;
     }
 
     m_currentState = function;
     m_currentEvent = matchName(data, ' ');
-    if ( m_currentEvent.isEmpty() ) {
+    if (m_currentEvent.isEmpty()) {
         return;
     }
 

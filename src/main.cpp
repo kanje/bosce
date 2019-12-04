@@ -7,15 +7,15 @@
  */
 
 #include "ObjDumpParser.h"
-#include "ScParser.h"
 #include "ScModel.h"
+#include "ScParser.h"
 
+#include "PlantUmlGenerator.h"
 #include "StmListGenerator.h"
 #include "TextGenerator.h"
-#include "PlantUmlGenerator.h"
 
-#include <QProcess>
 #include <QFile>
+#include <QProcess>
 
 
 #include <boost/program_options.hpp>
@@ -52,8 +52,7 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
              "Specify a generator (plantuml, stmlist, text)");
 
     po::options_description oHidden;
-    oHidden.add_options()
-            ("input", po::value<std::string>(&settings.inputFile), "Input file");
+    oHidden.add_options()("input", po::value<std::string>(&settings.inputFile), "Input file");
 
     po::positional_options_description poDesc;
     poDesc.add("input", -1);
@@ -62,16 +61,12 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
     oDesc.add(oHidden).add(oVisible);
 
     po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv)
-              .options(oDesc).positional(poDesc).run(), vm);
+    po::store(po::command_line_parser(argc, argv).options(oDesc).positional(poDesc).run(), vm);
     po::notify(vm);
 
-    auto isSpecified = [&vm](const char *optName)
-    {
-        return vm.count(optName) > 0;
-    };
+    auto isSpecified = [&vm](const char *optName) { return vm.count(optName) > 0; };
 
-    if ( isSpecified("help") ) {
+    if (isSpecified("help")) {
         std::cout << "bosce: BOost State Chart Extractor (from objdump)\n" << std::endl;
         std::cout << oVisible << std::endl;
         return false;
@@ -81,17 +76,17 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
     settings.isExtractObjdump = isSpecified("extract");
     settings.isListStms = isSpecified("list");
 
-    if ( settings.isExtractObjdump ) {
-        if ( settings.isUseObjdump || settings.isListStms ||
-             !settings.stmName.empty() || !settings.generatorName.empty() ) {
+    if (settings.isExtractObjdump) {
+        if (settings.isUseObjdump || settings.isListStms || !settings.stmName.empty()
+            || !settings.generatorName.empty()) {
             throw po::error("option '-X' cannot be combined with other options");
         }
-    } else if ( settings.isListStms ) {
-        if ( !settings.stmName.empty() || !settings.generatorName.empty() ) {
+    } else if (settings.isListStms) {
+        if (!settings.stmName.empty() || !settings.generatorName.empty()) {
             throw po::error("option '-l' cannot be combined with options '-s' and '-g'");
         }
         settings.generatorName = "stmlist";
-    } else if ( settings.generatorName.empty() ) {
+    } else if (settings.generatorName.empty()) {
         // by default use plantuml as the most sophisticated generator:
         settings.generatorName = "plantuml";
     }
@@ -118,20 +113,19 @@ int main(int argc, char *argv[])
 
     // Highlight name set:
     ScNameSet highlightSet;
-    for( const auto &highlightName : settings.highlightNameList )
-    {
+    for (const auto &highlightName : settings.highlightNameList) {
         highlightSet.insert(ScName::fromStdString(highlightName));
     }
 
     // Generator:
     std::unique_ptr<AbstractGenerator> generator;
-    if ( settings.isExtractObjdump ) {
+    if (settings.isExtractObjdump) {
         /* do nothing */
-    } else if ( settings.generatorName == "plantuml" ) {
+    } else if (settings.generatorName == "plantuml") {
         generator = std::make_unique<PlantUmlGenerator>(model, highlightSet);
-    } else if ( settings.generatorName == "stmlist" ) {
+    } else if (settings.generatorName == "stmlist") {
         generator = std::make_unique<StmListGenerator>(model);
-    } else if ( settings.generatorName == "text" ) {
+    } else if (settings.generatorName == "text") {
         generator = std::make_unique<TextGenerator>(model, highlightSet);
     } else {
         std::cerr << "Invalid generator: " << settings.generatorName << "\n";
@@ -143,10 +137,10 @@ int main(int argc, char *argv[])
     ScParser scParser(model);
     ObjDumpParser objDumpParser(scParser);
 
-    if ( settings.isUseObjdump ) {
+    if (settings.isUseObjdump) {
         /* Use a pre-generated objdump file */
         QFile file(QString::fromStdString(settings.inputFile));
-        if ( !file.open(QIODevice::ReadOnly | QIODevice::Text) ) {
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             std::cerr << "Cannot open an input file\n" << std::endl;
             return -1;
         }
@@ -156,21 +150,21 @@ int main(int argc, char *argv[])
         /* Generate an objfile on the fly. */
         QProcess process;
 
-        if ( settings.isExtractObjdump ) {
+        if (settings.isExtractObjdump) {
             process.setProcessChannelMode(QProcess::ForwardedChannels);
         } else {
             process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
         }
 
-        process.start("objdump", {"-j", ".text", "-C", "-d",
-                                  QString::fromStdString(settings.inputFile)});
+        process.start("objdump",
+                      {"-j", ".text", "-C", "-d", QString::fromStdString(settings.inputFile)});
         process.waitForFinished(-1);
 
-        if ( (process.exitStatus() != QProcess::NormalExit) || process.exitCode() ) {
+        if ((process.exitStatus() != QProcess::NormalExit) || process.exitCode()) {
             std::cerr << "Cannot generate an objdump\n" << std::endl;
         }
 
-        if ( !settings.isExtractObjdump ) {
+        if (!settings.isExtractObjdump) {
             objDumpParser.parse(process);
         } else {
             return 0;

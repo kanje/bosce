@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QMap>
 #include <QByteArray>
+#include <QMap>
 #include <QVector>
 
 #include <set> // we need a predefined order
@@ -38,7 +38,8 @@ struct ScState final
     // Set of deferred events.
     ScNameSet deferrals;
 
-    bool isDefined() const {
+    bool isDefined() const
+    {
         return !parent.isEmpty();
     }
 };
@@ -53,7 +54,8 @@ public:
 
 public:
     void addStateMachine(const ScName &name, const ScName &initialState);
-    void addState(const ScName &name, const ScName &parent, int orthRegion, const ScNameList &initialSubstates);
+    void addState(const ScName &name, const ScName &parent, int orthRegion,
+                  const ScNameList &initialSubstates);
     void addTransition(const ScName &target, const ScName &event);
     void addDeferral(const ScName &event);
     void setActiveState(const ScName &name);

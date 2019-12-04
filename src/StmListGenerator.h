@@ -2,8 +2,7 @@
 
 #include "AbstractGenerator.h"
 
-class StmListGenerator final
-        : public AbstractGenerator
+class StmListGenerator final : public AbstractGenerator
 {
     using AbstractGenerator::AbstractGenerator;
 

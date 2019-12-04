@@ -17,8 +17,9 @@ public:
     virtual void generate(QIODevice &output, const ScName &stmName) = 0;
 
 public:
-    bool isHighlighted(const ScName& name) const {
-        return ( m_highlightSet.find(name) != m_highlightSet.cend() );
+    bool isHighlighted(const ScName &name) const
+    {
+        return (m_highlightSet.find(name) != m_highlightSet.cend());
     }
 
 protected:

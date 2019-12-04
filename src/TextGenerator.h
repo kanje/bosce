@@ -2,8 +2,7 @@
 
 #include "AbstractGenerator.h"
 
-class TextGenerator final
-        : public AbstractGenerator
+class TextGenerator final : public AbstractGenerator
 {
     using AbstractGenerator::AbstractGenerator;
 
