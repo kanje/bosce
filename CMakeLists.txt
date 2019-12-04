@@ -12,25 +12,8 @@ project(bosce CXX)
 find_package(Qt5 REQUIRED COMPONENTS Core CONFIG)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
-# Compile with these options:
-add_compile_options(
-    -pedantic
-    -Werror
-    -Wall
-    -Wextra
-)
-
-# Use clang-tidy:
-find_program(CLANG_TIDY_EXECUTABLE
-  NAMES
-    clang-tidy
-)
-if(CLANG_TIDY_EXECUTABLE)
-    set(CMAKE_CXX_CLANG_TIDY
-        ${CLANG_TIDY_EXECUTABLE}
-        -checks=-*,clang*,performance*,readability*,misc*,modernize*,-readability-implicit-bool-cast
-    )
-endif()
+include(cmake/CompilerFlags.cmake)
+include(cmake/ClangTidy.cmake)
 
 add_executable(bosce
     src/main.cpp
@@ -44,20 +27,8 @@ add_executable(bosce
     src/PlantUmlGenerator.cpp
 )
 
-target_compile_features(bosce
-  PUBLIC
-    cxx_std_14 # enforce C++14
-)
-
 target_link_libraries(bosce
   PUBLIC
     Qt5::Core
     ${Boost_LIBRARIES}
-)
-
-# Add these files to IDE:
-add_custom_target(extra-files
-  SOURCES
-    README.md
-    LICENSE
 )
