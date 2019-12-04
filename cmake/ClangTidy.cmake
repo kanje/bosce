@@ -21,7 +21,4 @@ if(NOT CLANG_TIDY_EXECUTABLE)
     message(FATAL_ERROR "Cannot find clang-tidy!")
 endif()
 
-set(CMAKE_CXX_CLANG_TIDY
-    ${CLANG_TIDY_EXECUTABLE}
-    -checks=-*,clang*,performance*,readability*,misc*,modernize*,-readability-implicit-bool-cast,-readability-implicit-bool-conversion
-)
+set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE})
