@@ -9,6 +9,8 @@
 cmake_minimum_required(VERSION 3.3)
 project(bosce CXX)
 
+enable_testing()
+
 find_package(Qt5 REQUIRED COMPONENTS Core CONFIG)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
@@ -32,3 +34,5 @@ target_link_libraries(bosce
     Qt5::Core
     ${Boost_LIBRARIES}
 )
+
+add_subdirectory(test)

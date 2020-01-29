@@ -1,0 +1,20 @@
+@startuml
+note "StopWatch\nGenerated on 00.00.0000" as NoteGenerated #A2F2A2
+[*] --> 2
+  state "Active" as 2 {
+    [*] --> 3
+    state "Running" as 4 {
+    }
+    4-->3 : EvStartStop\n
+    state "Stopped" as 3 {
+    }
+    3-->4 : EvStartStop\n
+  }
+  2 : Deferrals:
+  2 : * EvTerminate
+  2-->2 : EvPlayMusic\nEvReset\n
+  2-->5 : EvPlayMusic\n
+  state "MusicBoxMode" as 5 {
+  }
+  5-->2 : EvReset\n
+@enduml
