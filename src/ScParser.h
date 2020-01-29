@@ -8,13 +8,13 @@ public:
     ScParser(ScModel &model);
 
 public:
-    void parseFunctionDecl(char *&data);
-    void parseFunctionCall(char *&data);
+    bool parseFunctionDecl(char *&data);
+    bool parseFunctionCall(char *&data);
 
 private:
     void parseStateMachine(char *&data);
     void parseSimpleState(char *&data);
-    void parseReactMethod(char *&data);
+    bool parseReactMethod(char *&data);
     void parseReactionList(char *mplList);
 
 private:

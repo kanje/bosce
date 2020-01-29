@@ -62,35 +62,41 @@ inline char *matchAngleArgument(char *&data, bool skipToEnd = false)
     }
 }
 
-void ScParser::parseFunctionDecl(char *&data)
+bool ScParser::parseFunctionDecl(char *&data)
 {
     m_hasCurrentState = false;
 
     // boost::statechart::detail::reaction_result
     //     boost::statechart::simple_state< *state-spec* >::
-    //         local_react<boost::mpl::list<boost::statechart::custom_reaction< *event-name* >,
-    //                     boost::statechart::deferral< * event-name * >,
-    //                     mpl_::na, ..., mpl_::na> >(boost::statechart::event_base const&, void const*)>
+    //         local_react<boost::mpl::list<
+    //                         boost::statechart::custom_reaction< *event-name* >,
+    //                         boost::statechart::deferral< * event-name * >,
+    //                         mpl_::na, ..., mpl_::na> >(
+    //                            boost::statechart::event_base const&, void const*)>
 
     if (expectStartsWith(data, "boost::statechart::")) {
         expectStartsWith(data, "detail::reaction_result boost::statechart::");
         // boost::statechart::state_machine<fsm::StateMachine, fsm::NotStarted, ...
         if (expectStartsWith(data, "state_machine<")) {
             parseStateMachine(data);
-        } else
+            return true;
+        } else {
             // boost::statechart::simple_state<fsm::NotStarted, fsm::StateMachine, ...
             if (expectStartsWith(data, "simple_state<")) {
-            parseSimpleState(data);
+                parseSimpleState(data);
+                return true;
+            }
         }
+        return false;
     } else {
-        parseReactMethod(data);
+        return parseReactMethod(data);
     }
 }
 
-void ScParser::parseFunctionCall(char *&data)
+bool ScParser::parseFunctionCall(char *&data)
 {
     if (!m_hasCurrentState) {
-        return;
+        return false;
     }
 
     // boost::statechart::detail::safe_reaction_result
@@ -107,7 +113,9 @@ void ScParser::parseFunctionCall(char *&data)
         } else if (expectStartsWith(data, "::defer_event()")) {
             m_model.addDeferral(m_currentEvent);
         }
+        return true;
     }
+    return false;
 }
 
 void ScParser::parseStateMachine(char *&data)
@@ -197,8 +205,8 @@ void ScParser::parseSimpleState(char *&data)
      *
      * simple_state<state-name,
      *              boost::statechart::simple_state<parent-state, grandparent-state,
-     *                                              boost::mpl::list<initial-substate, mpl_::na, ...>,
-     *                                              (boost::statechart::history_mode)0>::orthogonal<(unsigned char)0>,
+     *                                              boost::mpl::list<initial-substate, mpl_::na,
+     * ...>, (boost::statechart::history_mode)0>::orthogonal<(unsigned char)0>,
      *              boost::mpl::list<initial-substate, mpl_::na, ...>,
      *              (boost::statechart::history_mode)0>
      */
@@ -259,7 +267,7 @@ inline char *matchName(char *&data, char terminus)
     return start;
 }
 
-void ScParser::parseReactMethod(char *&data)
+bool ScParser::parseReactMethod(char *&data)
 {
     /*
      * *state*::react(*event* const&)
@@ -267,18 +275,19 @@ void ScParser::parseReactMethod(char *&data)
 
     char *function = matchName(data, '(');
     if (!function) {
-        return;
+        return false;
     }
     if (!expectEndsWith(function, data - 1, "::react")) {
-        return;
+        return false;
     }
 
     m_currentState = function;
     m_currentEvent = matchName(data, ' ');
     if (m_currentEvent.isEmpty()) {
-        return;
+        return false;
     }
 
     m_hasCurrentState = true;
     m_model.setActiveState(m_currentState);
+    return true;
 }

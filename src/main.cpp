@@ -33,16 +33,19 @@ struct Settings
     std::vector<std::string> highlightNameList;
     bool isUseObjdump;
     bool isExtractObjdump;
+    bool isStripObjdump;
     bool isListStms;
 };
 
 static bool parseOptions(Settings &settings, int argc, char *argv[])
 {
     po::options_description oVisible("Generic options");
+    // clang-format off
     oVisible.add_options()
             ("help,h", "Show this help message")
             ("objdump,O", "An input file is an objdump instead of binary")
             ("extract,X", "Only extract an objdump out of an input binary")
+            ("strip,S", "Strip an objdump to contain only relevat data")
             ("list,l", "List all state-machine names")
             ("highlight,t", po::value<std::vector<std::string>>(&settings.highlightNameList),
              "Highlight given names in the generated state-machine output (multiple use possible)")
@@ -50,6 +53,7 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
              "Generate an output for a specific state-machine")
             ("generator,g", po::value<std::string>(&settings.generatorName),
              "Specify a generator (plantuml, stmlist, text)");
+    // clang-format on
 
     po::options_description oHidden;
     oHidden.add_options()("input", po::value<std::string>(&settings.inputFile), "Input file");
@@ -74,12 +78,17 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
 
     settings.isUseObjdump = isSpecified("objdump");
     settings.isExtractObjdump = isSpecified("extract");
+    settings.isStripObjdump = isSpecified("strip");
     settings.isListStms = isSpecified("list");
 
     if (settings.isExtractObjdump) {
         if (settings.isUseObjdump || settings.isListStms || !settings.stmName.empty()
             || !settings.generatorName.empty()) {
-            throw po::error("option '-X' cannot be combined with other options");
+            throw po::error("option '-X' can be combined only with option '-S'");
+        }
+    } else if (settings.isStripObjdump) {
+        if (settings.isListStms || !settings.stmName.empty() || !settings.generatorName.empty()) {
+            throw po::error("option '-S' can be combined only with option '-X'");
         }
     } else if (settings.isListStms) {
         if (!settings.stmName.empty() || !settings.generatorName.empty()) {
@@ -119,7 +128,7 @@ int main(int argc, char *argv[])
 
     // Generator:
     std::unique_ptr<AbstractGenerator> generator;
-    if (settings.isExtractObjdump) {
+    if (settings.isExtractObjdump || settings.isStripObjdump) {
         /* do nothing */
     } else if (settings.generatorName == "plantuml") {
         generator = std::make_unique<PlantUmlGenerator>(model, highlightSet);
@@ -144,7 +153,7 @@ int main(int argc, char *argv[])
             std::cerr << "Cannot open an input file\n" << std::endl;
             return -1;
         }
-        objDumpParser.parse(file);
+        objDumpParser.parse(file, settings.isStripObjdump);
 
     } else {
         /* Generate an objfile on the fly. */
@@ -165,10 +174,15 @@ int main(int argc, char *argv[])
         }
 
         if (!settings.isExtractObjdump) {
-            objDumpParser.parse(process);
+            objDumpParser.parse(process, settings.isStripObjdump);
         } else {
             return 0;
         }
+    }
+
+    // Do not generate the output if an objdump strip is requested:
+    if (settings.isStripObjdump) {
+        return 0;
     }
 
     // Generation:

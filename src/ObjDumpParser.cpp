@@ -3,6 +3,7 @@
 #include "ScParser.h"
 
 #include <QIODevice>
+#include <boost/algorithm/string/replace.hpp>
 #include <iostream>
 
 ObjDumpParser::ObjDumpParser(ScParser &scParser)
@@ -10,8 +11,10 @@ ObjDumpParser::ObjDumpParser(ScParser &scParser)
 {
 }
 
-void ObjDumpParser::parse(QIODevice &input)
+void ObjDumpParser::parse(QIODevice &input, bool doStripInput)
 {
+    std::string originalBuf;
+
     while (!input.atEnd()) {
         qint64 rcnt = input.readLine(m_buf, m_bufsz);
         Q_ASSERT(rcnt != m_bufsz - 1);
@@ -20,28 +23,40 @@ void ObjDumpParser::parse(QIODevice &input)
             return;
         }
 
+        if (doStripInput) {
+            // Copy is needed because parsing modifies the original string for
+            // performance reasons.
+            originalBuf = m_buf;
+        }
+
         char *data = m_buf;
+        bool isHandled = false;
         if (*data == ' ') {
-            parseFunctionCall(data, rcnt);
+            isHandled = parseFunctionCall(data, rcnt);
         } else {
-            parseFunctionDecl(data, rcnt);
+            isHandled = parseFunctionDecl(data, rcnt);
+        }
+
+        if (doStripInput && isHandled) {
+            boost::replace_all(originalBuf, "mpl_::na, ", "");
+            std::cout << originalBuf;
         }
     }
 }
 
 // 0000000005c5c5d2 <foo::bar<T>(void*)>:
-void ObjDumpParser::parseFunctionDecl(char *&data, std::size_t size)
+bool ObjDumpParser::parseFunctionDecl(char *&data, std::size_t size)
 {
     char *const endOfData = data + size - 3;
 
     if (!(expectAddress(data) && expectString(data, " <")))
-        return;
+        return false;
 
     if (!eqString(endOfData, ">:\n"))
-        return;
+        return false;
     *endOfData = 0;
 
-    m_scParser.parseFunctionDecl(data);
+    return m_scParser.parseFunctionDecl(data);
 }
 
 inline bool expectAsmBytes(char *&data)
@@ -61,16 +76,16 @@ inline bool expectAsmBytes(char *&data)
 }
 
 // 5c5c5e5:       e8 34 21 00 00          callq  5c5e71e <void foo::bar<T>(void*)>
-void ObjDumpParser::parseFunctionCall(char *&data, std::size_t size)
+bool ObjDumpParser::parseFunctionCall(char *&data, std::size_t size)
 {
     const char *const endOfData = data + size - 2;
 
     if (!(expectAddress(data) && expectString(data, ":\t") && expectAsmBytes(data)
           && expectString(data, "callq  ") && expectAddress(data) && expectString(data, " <")))
-        return;
+        return false;
 
     if (!eqString(endOfData, ">\n"))
-        return;
+        return false;
 
-    m_scParser.parseFunctionCall(data);
+    return m_scParser.parseFunctionCall(data);
 }

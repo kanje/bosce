@@ -11,11 +11,11 @@ public:
     ObjDumpParser(ScParser &scParser);
 
 public:
-    void parse(QIODevice &input);
+    void parse(QIODevice &input, bool doStripInput);
 
 private:
-    void parseFunctionDecl(char *&data, std::size_t size);
-    void parseFunctionCall(char *&data, std::size_t size);
+    bool parseFunctionDecl(char *&data, std::size_t size);
+    bool parseFunctionCall(char *&data, std::size_t size);
 
 private:
     ScParser &m_scParser;
