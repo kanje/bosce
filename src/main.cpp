@@ -87,6 +87,9 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
             throw po::error("option '-X' can be combined only with option '-S'");
         }
     } else if (settings.isStripObjdump) {
+        if (!(settings.isUseObjdump || settings.isExtractObjdump)) {
+            throw po::error("option '-S' must be combined with either '-X' or '-O'");
+        }
         if (settings.isListStms || !settings.stmName.empty() || !settings.generatorName.empty()) {
             throw po::error("option '-S' can be combined only with option '-X'");
         }
@@ -159,11 +162,9 @@ int main(int argc, char *argv[])
         /* Generate an objfile on the fly. */
         QProcess process;
 
-        if (settings.isExtractObjdump) {
-            process.setProcessChannelMode(QProcess::ForwardedChannels);
-        } else {
-            process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-        }
+        const auto isFullExtractMode = settings.isExtractObjdump && !settings.isStripObjdump;
+        process.setProcessChannelMode(isFullExtractMode ? QProcess::ForwardedChannels :
+                                                          QProcess::ForwardedErrorChannel);
 
         process.start("objdump",
                       {"-j", ".text", "-C", "-d", QString::fromStdString(settings.inputFile)});
@@ -173,11 +174,11 @@ int main(int argc, char *argv[])
             std::cerr << "Cannot generate an objdump\n" << std::endl;
         }
 
-        if (!settings.isExtractObjdump) {
-            objDumpParser.parse(process, settings.isStripObjdump);
-        } else {
+        if (isFullExtractMode) {
             return 0;
         }
+
+        objDumpParser.parse(process, settings.isStripObjdump);
     }
 
     // Do not generate the output if an objdump strip is requested:

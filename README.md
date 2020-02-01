@@ -4,6 +4,9 @@ information about <a href="https://www.boost.org/doc/libs/1_71_0/libs/statechart
 boost::statechart</a>s from an arbitrary binary with debug symbols and transform it to a
 user-friendly form, e.g. UML diagrams.
 
+It relies on <a href="http://man7.org/linux/man-pages/man1/objdump.1.html">objdump</a> to
+extract information from binaries and is primarily intended to be used in a Linux environment.
+
 ## Demo
 First, we need a binary with debug symbols to work on.
 
@@ -54,3 +57,14 @@ Finally, build bosce.
     [ 12%] Building CXX object CMakeFiles/bosce.dir/src/ScModel.cpp.o
     ...
     [100%] Built target bosce
+
+## Reporting Issues
+If you have encountered a problem and want to report it, please do not forget to provide an
+objdump which shows the problem. If the objdump is too big or contains proprietary code, it
+can be stripped.
+
+    $ bosce -SO original.objdump > stripped.objdump
+    $ bosce -SX binary > stripped.objdump
+
+The stripped objdump contains only information related to `boost::statechart`s. Note, this
+includes state-machine, state and event names as well as assembly for `react()` methods.
