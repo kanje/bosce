@@ -6,7 +6,7 @@
 ##                      http://www.boost.org/LICENSE_1_0.txt)
 ##
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.5)
 project(bosce CXX)
 
 enable_testing()
@@ -32,7 +32,7 @@ add_executable(bosce
 target_link_libraries(bosce
   PUBLIC
     Qt5::Core
-    ${Boost_LIBRARIES}
+    Boost::program_options
 )
 
 add_subdirectory(test)
