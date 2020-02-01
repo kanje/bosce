@@ -4,9 +4,7 @@ const ScName ScModel::RootScName = "[root]";
 
 void ScModel::addStateMachine(const ScName &name, const ScName &initialState)
 {
-    if (!m_states.contains(name)) {
-        addState(name, RootScName, 0, {initialState});
-    }
+    addState(name, RootScName, 0, {initialState});
 }
 
 void ScModel::addState(const ScName &name, const ScName &parent, int orthRegion,
