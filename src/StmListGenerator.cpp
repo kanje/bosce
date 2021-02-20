@@ -6,7 +6,7 @@
 void StmListGenerator::generate(QIODevice &output, const ScName &stmName)
 {
     QTextStream cout(&output);
-    const auto &rootState = m_model.states()[ScModel::RootScName];
+    const auto &rootState = m_model.states().at(ScModel::RootScName);
 
     if (!stmName.isEmpty()) {
         cout << "Note: discarding a state-machine name\n";

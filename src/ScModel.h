@@ -1,17 +1,20 @@
 #pragma once
 
 #include <QByteArray>
-#include <QMap>
-#include <QVector>
 
-#include <set> // we need a predefined order
+#include <map>
+#include <set>
+#include <vector>
 
 // Name of state-machine, state or event.
 using ScName = QByteArray;
 
+// Number of an orthogonal region.
+using ScRegion = std::size_t;
+
 // Set of names.
 using ScNameSet = std::set<ScName>;
-using ScNameList = QVector<ScName>;
+using ScNameList = std::vector<ScName>;
 
 // Set of substates in one orthogonal region.
 struct ScSubstateSet final
@@ -30,10 +33,10 @@ struct ScState final
     ScName parent;
 
     // List of orthogonal substate sets.
-    QVector<ScSubstateSet> substates;
+    std::vector<ScSubstateSet> substates;
 
     // Set of transitions (target state -> what events lead there).
-    QMap<ScName /* target */, ScNameSet /* set of events */> transitions;
+    std::map<ScName /* target */, ScNameSet /* set of events */> transitions;
 
     // Set of deferred events.
     ScNameSet deferrals;
@@ -45,7 +48,7 @@ struct ScState final
 };
 
 // Map state name to state details.
-using ScStateMap = QMap<ScName, ScState>;
+using ScStateMap = std::map<ScName, ScState>;
 
 class ScModel final
 {
@@ -54,7 +57,7 @@ public:
 
 public:
     void addStateMachine(const ScName &name, const ScName &initialState);
-    void addState(const ScName &name, const ScName &parent, int orthRegion,
+    void addState(const ScName &name, const ScName &parent, ScRegion orthRegion,
                   const ScNameList &initialSubstates);
     void addTransition(const ScName &target, const ScName &event);
     void addDeferral(const ScName &event);
@@ -67,7 +70,7 @@ public:
     }
 
 private:
-    void addSubstate(const ScName &name, const ScName &substate, int orthRegion);
+    void addSubstate(const ScName &name, const ScName &substate, ScRegion orthRegion);
 
 private:
     ScStateMap m_states;

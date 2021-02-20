@@ -146,10 +146,10 @@ static ScNameList parseInitialSubstateList(char *mplList)
                 break;
             }
 
-            list.append(substate);
+            list.push_back(substate);
         }
     } else {
-        list.append(mplList);
+        list.push_back(mplList);
     }
 
     return list;

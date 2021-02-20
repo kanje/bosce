@@ -50,7 +50,7 @@ void PlantUmlGenerator::addWelcomeNote(QTextStream &cout, const ScName &stmName)
 
 void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int indentLevel)
 {
-    const auto &state = m_model.states()[name];
+    const auto &state = m_model.states().at(name);
     const auto &nameAlias = alias(name);
 
     QByteArray indent(indentLevel * 2, ' ');
@@ -62,7 +62,7 @@ void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int inde
 
     // Substates:
     const auto nrOrthRegions = state.substates.size();
-    for (auto orthRegion = 0; orthRegion < nrOrthRegions; orthRegion++) {
+    for (ScRegion orthRegion = 0; orthRegion < nrOrthRegions; orthRegion++) {
         if (orthRegion > 0) {
             cout << indent << "--\n";
         }
@@ -87,11 +87,8 @@ void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int inde
     }
 
     // Transitions:
-    const auto targetNames = state.transitions.keys();
-    for (const auto &targetName : targetNames) {
+    for (const auto &[targetName, eventNames] : state.transitions) {
         bool isTransitionHighlighted = false;
-        const auto &eventNames = state.transitions[targetName];
-
         for (auto &eventName : eventNames) {
             if (!eventName.isEmpty() && isHighlighted(eventName)) {
                 isTransitionHighlighted = true;
@@ -105,8 +102,8 @@ void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int inde
 
 const ScName &PlantUmlGenerator::alias(const ScName &name)
 {
-    if (!m_alias.contains(name)) {
-        m_alias.insert(name, ScName::number(m_nextAlias++));
+    if (m_alias.find(name) == m_alias.cend()) {
+        m_alias.insert({name, ScName::number(m_nextAlias++)});
     }
     return m_alias[name];
 }

@@ -29,7 +29,7 @@ Finally, we use PlantUML to generate a PNG file and open it.
     $ xdg-open uml.png
 
 ## Build Instructions
-Bosce depends on `Qt5Core` and `boost::program_options` and requires a C++14 compatible compiler.
+Bosce depends on `Qt5Core` and `boost::program_options` and requires a C++17 compatible compiler.
 
 First, clone the repository.
 

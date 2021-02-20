@@ -7,7 +7,7 @@ void ScModel::addStateMachine(const ScName &name, const ScName &initialState)
     addState(name, RootScName, 0, {initialState});
 }
 
-void ScModel::addState(const ScName &name, const ScName &parent, int orthRegion,
+void ScModel::addState(const ScName &name, const ScName &parent, ScRegion orthRegion,
                        const ScNameList &initialSubstates)
 {
     auto &state = m_states[name];
@@ -19,7 +19,7 @@ void ScModel::addState(const ScName &name, const ScName &parent, int orthRegion,
         const auto nrOrthRegions = initialSubstates.size();
         state.substates.resize(nrOrthRegions);
 
-        for (int i = 0; i < nrOrthRegions; i++) {
+        for (std::size_t i = 0; i < nrOrthRegions; i++) {
             const ScName &substate = initialSubstates[i];
             ScSubstateSet &substateSet = state.substates[i];
 
@@ -41,7 +41,7 @@ void ScModel::addDeferral(const ScName &event)
     m_activeState->deferrals.insert(event);
 }
 
-void ScModel::addSubstate(const ScName &name, const ScName &substate, int orthRegion)
+void ScModel::addSubstate(const ScName &name, const ScName &substate, ScRegion orthRegion)
 {
     auto &substates = m_states[name].substates;
     if (substates.size() <= orthRegion) {

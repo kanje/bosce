@@ -9,7 +9,7 @@
 option(WITH_WARNINGS "Build with compiler warning enabled")
 
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if(WITH_WARNINGS)
     add_compile_options(

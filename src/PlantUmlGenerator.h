@@ -27,6 +27,6 @@ private:
                         const ScNameSet &eventNames);
 
 private:
-    QMap<ScName, ScName> m_alias;
+    std::map<ScName, ScName> m_alias;
     int m_nextAlias = 1;
 };

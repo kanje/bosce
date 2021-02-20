@@ -20,11 +20,10 @@ void TextGenerator::generate(QIODevice &output, const ScName &stmName)
         cout << "Note: discarding a state-machine name\n";
     }
 
-    for (const auto &name : states.keys()) {
-        const auto &state = states[name];
+    for (const auto &[name, state] : states) {
         cout << "Name: " << hlText(name) << "\n";
         cout << "Parent: " << hlText(state.parent) << "\n";
-        for (int i = 0; i < state.substates.size(); i++) {
+        for (std::size_t i = 0; i < state.substates.size(); i++) {
             cout << "Substates (" << i << ") [" << state.substates[i].initial << "]:\n";
             for (const auto &substate : state.substates[i].states) {
                 cout << "    " << hlText(substate) << "\n";
@@ -32,9 +31,9 @@ void TextGenerator::generate(QIODevice &output, const ScName &stmName)
         }
         if (!state.transitions.empty()) {
             cout << "Transitions:\n";
-            for (const auto &target : state.transitions.keys()) {
+            for (const auto &[target, events] : state.transitions) {
                 cout << "==> " << hlText(target) << "\n";
-                for (const auto &event : state.transitions[target]) {
+                for (const auto &event : events) {
                     cout << "    ** " << hlText(event) << "\n";
                 }
             }
