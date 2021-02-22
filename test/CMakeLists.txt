@@ -17,3 +17,4 @@ endmacro()
 
 add_plantuml_test(StopWatch 01 StopWatch)
 add_plantuml_test(InitialStateBeforeStm 02 StopWatch)
+add_plantuml_test(CustomTransitionToTemplateState 03 SM)

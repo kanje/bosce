@@ -1,0 +1,9 @@
+@startuml
+note "SM\nGenerated on 00.00.0000" as NoteGenerated #A2F2A2
+[*] --> 2
+  state "First" as 2 {
+  }
+  2-->3 : Event\n
+  state "Second<0>" as 3 {
+  }
+@enduml

@@ -48,7 +48,13 @@ inline char *matchAngleArgument(char *&data, bool skipToEnd = false)
             break;
         case '>':
             if (!--nrAngles) {
-                *(data++) = '\0';
+                if (data[-1] == ' ') {
+                    // handle a double closing angle, e.g. "foo<bar<1> >"
+                    data[-1] = '\0';
+                    ++data;
+                } else {
+                    *(data++) = '\0';
+                }
                 return start;
             }
             break;
