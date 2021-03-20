@@ -6,13 +6,13 @@
 ##                      http://www.boost.org/LICENSE_1_0.txt)
 ##
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(bosce CXX)
 
 enable_testing()
 
-find_package(Qt5 REQUIRED COMPONENTS Core CONFIG)
-find_package(Boost REQUIRED COMPONENTS program_options)
+find_package(Boost REQUIRED COMPONENTS program_options filesystem)
+find_package(Threads REQUIRED)
 
 include(cmake/CompilerFlags.cmake)
 include(cmake/ClangTidy.cmake)
@@ -31,8 +31,9 @@ add_executable(bosce
 
 target_link_libraries(bosce
   PUBLIC
-    Qt5::Core
+    Threads::Threads
     Boost::program_options
+    Boost::filesystem
 )
 
 add_subdirectory(test)

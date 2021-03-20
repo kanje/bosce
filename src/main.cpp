@@ -14,16 +14,13 @@
 #include "StmListGenerator.h"
 #include "TextGenerator.h"
 
-#include <QFile>
-#include <QProcess>
-
-
+#include <boost/process.hpp>
 #include <boost/program_options.hpp>
-
 #include <iostream>
 #include <memory>
 
 namespace po = boost::program_options;
+namespace bp = boost::process;
 
 struct Settings
 {
@@ -107,17 +104,11 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
 }
 
 int main(int argc, char *argv[])
-{
+try {
     // Command line arguments:
     Settings settings;
-
-    try {
-        if (!parseOptions(settings, argc, argv)) {
-            return 0;
-        }
-    } catch (const po::error &err) {
-        std::cerr << "Error: " << err.what() << std::endl;
-        return -1;
+    if (!parseOptions(settings, argc, argv)) {
+        return EXIT_SUCCESS;
     }
 
     // Model:
@@ -126,7 +117,7 @@ int main(int argc, char *argv[])
     // Highlight name set:
     ScNameSet highlightSet;
     for (const auto &highlightName : settings.highlightNameList) {
-        highlightSet.insert(ScName::fromStdString(highlightName));
+        highlightSet.insert(highlightName);
     }
 
     // Generator:
@@ -151,34 +142,32 @@ int main(int argc, char *argv[])
 
     if (settings.isUseObjdump) {
         /* Use a pre-generated objdump file */
-        QFile file(QString::fromStdString(settings.inputFile));
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            std::cerr << "Cannot open an input file\n" << std::endl;
-            return -1;
+        std::ifstream file(settings.inputFile);
+        if (!file) {
+            throw std::runtime_error("Cannot open an input file");
         }
         objDumpParser.parse(file, settings.isStripObjdump);
 
     } else {
         /* Generate an objfile on the fly. */
-        QProcess process;
-
         const auto isFullExtractMode = settings.isExtractObjdump && !settings.isStripObjdump;
-        process.setProcessChannelMode(isFullExtractMode ? QProcess::ForwardedChannels :
-                                                          QProcess::ForwardedErrorChannel);
+        bp::ipstream stream;
 
-        process.start("objdump",
-                      {"-j", ".text", "-C", "-d", QString::fromStdString(settings.inputFile)});
-        process.waitForFinished(-1);
+        auto objdump = [&](auto &output) {
+            return bp::child(bp::search_path("objdump"), "-j", ".text", "-C", "-d",
+                             settings.inputFile, bp::std_out > output, bp::std_err > stderr);
+        };
 
-        if ((process.exitStatus() != QProcess::NormalExit) || process.exitCode()) {
-            std::cerr << "Cannot generate an objdump\n" << std::endl;
+        auto child = isFullExtractMode ? objdump(stdout) : objdump(stream);
+        if (!isFullExtractMode) {
+            objDumpParser.parse(stream, settings.isStripObjdump);
         }
 
-        if (isFullExtractMode) {
-            return 0;
+        child.wait();
+        if (child.exit_code() != 0) {
+            throw std::runtime_error("objdump returned " + std::to_string(child.exit_code())
+                                     + "; invalid input binary name?");
         }
-
-        objDumpParser.parse(process, settings.isStripObjdump);
     }
 
     // Do not generate the output if an objdump strip is requested:
@@ -187,9 +176,10 @@ int main(int argc, char *argv[])
     }
 
     // Generation:
-    QFile stdout;
-    stdout.open(1, QIODevice::WriteOnly | QIODevice::Text);
-    generator->generate(stdout, ScName::fromStdString(settings.stmName));
+    generator->generate(std::cout, settings.stmName);
 
     return 0;
+} catch (const std::exception &ex) {
+    std::cerr << "Error: " << ex.what() << std::endl;
+    return EXIT_FAILURE;
 }

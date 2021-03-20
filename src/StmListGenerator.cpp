@@ -1,25 +1,29 @@
+/*
+ * Boost StateChart Extractor
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying file LICENSE or copy at
+ *                      http://www.boost.org/LICENSE_1_0.txt)
+ */
+
 #include "StmListGenerator.h"
 
-#include <QIODevice>
-#include <QTextStream>
-
-void StmListGenerator::generate(QIODevice &output, const ScName &stmName)
+void StmListGenerator::generate(std::ostream &output, const ScName &stmName)
 {
-    QTextStream cout(&output);
     const auto &rootState = m_model.states().at(ScModel::RootScName);
 
-    if (!stmName.isEmpty()) {
-        cout << "Note: discarding a state-machine name\n";
+    if (!stmName.empty()) {
+        output << "Note: discarding a state-machine name\n";
     }
 
     if (rootState.substates.empty()) {
-        cout << "No state-machines found\n";
+        output << "No state-machines found\n";
     } else {
-        cout << "Available state-machines:\n";
+        output << "Available state-machines:\n";
         for (const auto &stm : rootState.substates[0].states) {
-            cout << "    " << stm << "\n";
+            output << "    " << stm << "\n";
         }
     }
 
-    cout.flush();
+    output.flush();
 }

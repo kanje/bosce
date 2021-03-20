@@ -1,6 +1,6 @@
 # bosce
 Bosce, or **bo**ost::**s**tate**c**hart **e**xtractor, is a command line tool to extract
-information about <a href="https://www.boost.org/doc/libs/1_71_0/libs/statechart/doc/tutorial.html">
+information about <a href="https://www.boost.org/doc/libs/release/libs/statechart/doc/tutorial.html">
 boost::statechart</a>s from an arbitrary binary with debug symbols and transform it to a
 user-friendly form, e.g. UML diagrams.
 
@@ -10,7 +10,7 @@ extract information from binaries and is primarily intended to be used in a Linu
 ## Demo
 First, we need a binary with debug symbols to work on.
 
-    $ g++ demo.cpp -o demo
+    $ g++ -g demo.cpp -o demo
 
 Then, we get a list of state machine in this binary.
 
@@ -29,7 +29,7 @@ Finally, we use PlantUML to generate a PNG file and open it.
     $ xdg-open uml.png
 
 ## Build Instructions
-Bosce depends on `Qt5Core` and `boost::program_options` and requires a C++17 compatible compiler.
+Bosce depends on `boost::program_options` and `boost::process` and requires a C++17 compatible compiler.
 
 First, clone the repository.
 
@@ -57,6 +57,13 @@ Finally, build bosce.
     [ 12%] Building CXX object CMakeFiles/bosce.dir/src/ScModel.cpp.o
     ...
     [100%] Built target bosce
+
+Optionally, build a demo statechart binary to experiment on.
+
+    $ make demo
+    Scanning dependencies of target demo
+    [100%] Building a demo statechert binary
+    [100%] Built target demo
 
 ## Reporting Issues
 If you have encountered a problem and want to report it, please do not forget to provide an

@@ -1,3 +1,11 @@
+/*
+ * Boost StateChart Extractor
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying file LICENSE or copy at
+ *                      http://www.boost.org/LICENSE_1_0.txt)
+ */
+
 #include "ScParser.h"
 #include "ParserHelpers.h"
 #include "ScModel.h"
@@ -112,7 +120,7 @@ bool ScParser::parseFunctionCall(char *&data)
     if (expectStartsWith(data, "boost::statechart::simple_state<")) {
         matchAngleArgument(data, true);
         if (expectStartsWith(data, "::transit<")) {
-            QByteArray target = matchAngleArgument(data);
+            std::string target = matchAngleArgument(data);
             m_model.addTransition(target, m_currentEvent);
         } else if (expectStartsWith(data, "::discard_event()")) {
             m_model.addTransition(m_currentState, m_currentEvent);
@@ -142,8 +150,7 @@ static ScNameList parseInitialSubstateList(char *mplList)
             return list;
         }
 
-        forever
-        {
+        while (true) {
             char *substate = matchAngleArgument(mplList);
             if (!substate) { // end of list
                 break;
@@ -176,8 +183,7 @@ void ScParser::parseReactionList(char *mplList)
             return;
         }
 
-        forever
-        {
+        while (true) {
             char *reaction = matchAngleArgument(mplList);
             if (!reaction) {
                 break;
@@ -187,11 +193,11 @@ void ScParser::parseReactionList(char *mplList)
             }
 
             if (expectStartsWith(reaction, "boost::statechart::transition<")) {
-                QByteArray event = matchAngleArgument(reaction);
-                QByteArray target = matchAngleArgument(reaction);
+                std::string event = matchAngleArgument(reaction);
+                std::string target = matchAngleArgument(reaction);
                 m_model.addTransition(target, event);
             } else if (expectStartsWith(reaction, "boost::statechart::deferral<")) {
-                QByteArray event = matchAngleArgument(reaction);
+                std::string event = matchAngleArgument(reaction);
                 m_model.addDeferral(event);
             }
         }
@@ -289,7 +295,7 @@ bool ScParser::parseReactMethod(char *&data)
 
     m_currentState = function;
     m_currentEvent = matchName(data, ' ');
-    if (m_currentEvent.isEmpty()) {
+    if (m_currentEvent.empty()) {
         return false;
     }
 
