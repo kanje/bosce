@@ -1,7 +1,12 @@
-#include "TextGenerator.h"
+/*
+ * Boost StateChart Extractor
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying file LICENSE or copy at
+ *                      http://www.boost.org/LICENSE_1_0.txt)
+ */
 
-#include <QIODevice>
-#include <QTextStream>
+#include "TextGenerator.h"
 
 ScName TextGenerator::hlText(const ScName &name) const
 {
@@ -11,41 +16,40 @@ ScName TextGenerator::hlText(const ScName &name) const
     return name;
 }
 
-void TextGenerator::generate(QIODevice &output, const ScName &stmName)
+void TextGenerator::generate(std::ostream &output, const ScName &stmName)
 {
-    QTextStream cout(&output);
     const auto &states = m_model.states();
 
-    if (!stmName.isEmpty()) {
-        cout << "Note: discarding a state-machine name\n";
+    if (!stmName.empty()) {
+        output << "Note: discarding a state-machine name\n";
     }
 
     for (const auto &[name, state] : states) {
-        cout << "Name: " << hlText(name) << "\n";
-        cout << "Parent: " << hlText(state.parent) << "\n";
+        output << "Name: " << hlText(name) << "\n";
+        output << "Parent: " << hlText(state.parent) << "\n";
         for (std::size_t i = 0; i < state.substates.size(); i++) {
-            cout << "Substates (" << i << ") [" << state.substates[i].initial << "]:\n";
+            output << "Substates (" << i << ") [" << state.substates[i].initial << "]:\n";
             for (const auto &substate : state.substates[i].states) {
-                cout << "    " << hlText(substate) << "\n";
+                output << "    " << hlText(substate) << "\n";
             }
         }
         if (!state.transitions.empty()) {
-            cout << "Transitions:\n";
+            output << "Transitions:\n";
             for (const auto &[target, events] : state.transitions) {
-                cout << "==> " << hlText(target) << "\n";
+                output << "==> " << hlText(target) << "\n";
                 for (const auto &event : events) {
-                    cout << "    ** " << hlText(event) << "\n";
+                    output << "    ** " << hlText(event) << "\n";
                 }
             }
         }
         if (!state.deferrals.empty()) {
-            cout << "Deferrals:\n";
+            output << "Deferrals:\n";
             for (const auto &event : state.deferrals) {
-                cout << "    " << hlText(event) << "\n";
+                output << "    " << hlText(event) << "\n";
             }
         }
-        cout << "\n";
+        output << "\n";
     }
 
-    cout.flush();
+    output.flush();
 }

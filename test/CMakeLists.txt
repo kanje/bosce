@@ -18,3 +18,14 @@ endmacro()
 add_plantuml_test(StopWatch 01 StopWatch)
 add_plantuml_test(InitialStateBeforeStm 02 StopWatch)
 add_plantuml_test(CustomTransitionToTemplateState 03 SM)
+
+add_custom_target(demo
+  COMMAND
+    ${CMAKE_CXX_COMPILER} -g ${CMAKE_CURRENT_LIST_DIR}/src/demo.cpp -o demo
+  WORKING_DIRECTORY
+    ${CMAKE_BINARY_DIR}
+  SOURCES
+    src/demo.cpp
+  COMMENT
+    "Building a demo statechert binary"
+)

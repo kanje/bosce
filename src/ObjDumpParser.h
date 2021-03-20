@@ -1,9 +1,17 @@
+/*
+ * Boost StateChart Extractor
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying file LICENSE or copy at
+ *                      http://www.boost.org/LICENSE_1_0.txt)
+ */
+
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 
 class ScParser;
-class QIODevice;
 
 class ObjDumpParser final
 {
@@ -11,7 +19,7 @@ public:
     ObjDumpParser(ScParser &scParser);
 
 public:
-    void parse(QIODevice &input, bool doStripInput);
+    void parse(std::istream &input, bool doStripInput);
 
 private:
     bool parseFunctionDecl(char *&data, std::size_t size);
@@ -19,6 +27,4 @@ private:
 
 private:
     ScParser &m_scParser;
-    static constexpr std::size_t m_bufsz = 1048510; /* 1 MiB */
-    char m_buf[m_bufsz];
 };

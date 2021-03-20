@@ -1,13 +1,20 @@
-#pragma once
+/*
+ * Boost StateChart Extractor
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying file LICENSE or copy at
+ *                      http://www.boost.org/LICENSE_1_0.txt)
+ */
 
-#include <QByteArray>
+#pragma once
 
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 // Name of state-machine, state or event.
-using ScName = QByteArray;
+using ScName = std::string;
 
 // Number of an orthogonal region.
 using ScRegion = std::size_t;
@@ -43,7 +50,7 @@ struct ScState final
 
     bool isDefined() const
     {
-        return !parent.isEmpty();
+        return !parent.empty();
     }
 };
 

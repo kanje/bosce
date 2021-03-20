@@ -1,8 +1,14 @@
+/*
+ * Boost StateChart Extractor
+ *
+ * Distributed under the Boost Software License, Version 1.0.
+ * (See accompanying file LICENSE or copy at
+ *                      http://www.boost.org/LICENSE_1_0.txt)
+ */
+
 #include "PlantUmlGenerator.h"
 
-#include <QDateTime>
-#include <QIODevice>
-#include <QTextStream>
+#include <iomanip>
 
 static ScName removePrefix(const ScName &name)
 {
@@ -31,58 +37,57 @@ static ScName removePrefix(const ScName &name)
     return res;
 }
 
-void PlantUmlGenerator::generate(QIODevice &output, const ScName &stmName)
+void PlantUmlGenerator::generate(std::ostream &output, const ScName &stmName)
 {
-    QTextStream cout(&output);
-
-    cout << "@startuml\n";
-    addWelcomeNote(cout, stmName);
-    generate(cout, stmName, 0);
-    cout << "@enduml\n";
-    cout.flush();
+    output << "@startuml\n";
+    addWelcomeNote(output, stmName);
+    generate(output, stmName, 0);
+    output << "@enduml\n";
+    output.flush();
 }
 
-void PlantUmlGenerator::addWelcomeNote(QTextStream &cout, const ScName &stmName)
+void PlantUmlGenerator::addWelcomeNote(std::ostream &output, const ScName &stmName)
 {
-    cout << "note \"" << stmName << "\\nGenerated on "
-         << QDateTime::currentDateTime().toString("dd.MM.yyyy") << "\" as NoteGenerated #A2F2A2\n";
+    const auto time = std::time(nullptr);
+    output << "note \"" << stmName << "\\nGenerated on "
+           << std::put_time(std::localtime(&time), "%d.%m.%Y") << "\" as NoteGenerated #A2F2A2\n";
 }
 
-void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int indentLevel)
+void PlantUmlGenerator::generate(std::ostream &output, const ScName &name, int indentLevel)
 {
     const auto &state = m_model.states().at(name);
     const auto &nameAlias = alias(name);
 
-    QByteArray indent(indentLevel * 2, ' ');
+    std::string indent(indentLevel * 2, ' ');
 
     // Exclude the outerbox with a state machine name:
     if (indentLevel > 0) {
-        beginState(cout, indent, name, nameAlias);
+        beginState(output, indent, name, nameAlias);
     }
 
     // Substates:
     const auto nrOrthRegions = state.substates.size();
     for (ScRegion orthRegion = 0; orthRegion < nrOrthRegions; orthRegion++) {
         if (orthRegion > 0) {
-            cout << indent << "--\n";
+            output << indent << "--\n";
         }
 
         const auto &substates = state.substates[orthRegion];
-        cout << indent << "[*] --> " << alias(substates.initial) << "\n";
+        output << indent << "[*] --> " << alias(substates.initial) << "\n";
         for (const auto &substateName : substates.states) {
-            generate(cout, substateName, indentLevel + 1);
+            generate(output, substateName, indentLevel + 1);
         }
     }
 
     if (indentLevel > 0) {
-        endState(cout, indent);
+        endState(output, indent);
     }
 
     // Deferrals:
     if (!state.deferrals.empty()) {
-        cout << indent << nameAlias << " : Deferrals:\n";
+        output << indent << nameAlias << " : Deferrals:\n";
         for (const auto &eventName : state.deferrals) {
-            deferralLink(cout, indent, nameAlias, eventName);
+            deferralLink(output, indent, nameAlias, eventName);
         }
     }
 
@@ -90,12 +95,12 @@ void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int inde
     for (const auto &[targetName, eventNames] : state.transitions) {
         bool isTransitionHighlighted = false;
         for (auto &eventName : eventNames) {
-            if (!eventName.isEmpty() && isHighlighted(eventName)) {
+            if (!eventName.empty() && isHighlighted(eventName)) {
                 isTransitionHighlighted = true;
             }
         }
 
-        transitionLink(cout, indent, isTransitionHighlighted, nameAlias, alias(targetName),
+        transitionLink(output, indent, isTransitionHighlighted, nameAlias, alias(targetName),
                        eventNames);
     }
 }
@@ -103,65 +108,65 @@ void PlantUmlGenerator::generate(QTextStream &cout, const ScName &name, int inde
 const ScName &PlantUmlGenerator::alias(const ScName &name)
 {
     if (m_alias.find(name) == m_alias.cend()) {
-        m_alias.insert({name, ScName::number(m_nextAlias++)});
+        m_alias.insert({name, std::to_string(m_nextAlias++)});
     }
     return m_alias[name];
 }
 
-void PlantUmlGenerator::beginState(QTextStream &cout, QByteArray &indent, const ScName &name,
+void PlantUmlGenerator::beginState(std::ostream &output, std::string &indent, const ScName &name,
                                    const ScName &nameAlias)
 {
     const ScName nameShort = removePrefix(name);
 
     if (isHighlighted(name)) {
-        cout << indent << "state \"" << nameShort << "\" as " << nameAlias << " #IndianRed {\n";
+        output << indent << "state \"" << nameShort << "\" as " << nameAlias << " #IndianRed {\n";
     } else {
-        cout << indent << "state \"" << nameShort << "\" as " << nameAlias << " {\n";
+        output << indent << "state \"" << nameShort << "\" as " << nameAlias << " {\n";
     }
 
     indent.append("  ");
 }
 
-void PlantUmlGenerator::endState(QTextStream &cout, QByteArray &indent)
+void PlantUmlGenerator::endState(std::ostream &output, std::string &indent)
 {
-    indent.chop(2);
-    cout << indent << "}\n";
+    indent.erase(indent.size() - 2);
+    output << indent << "}\n";
 }
 
-void PlantUmlGenerator::deferralLink(QTextStream &cout, QByteArray &indent,
+void PlantUmlGenerator::deferralLink(std::ostream &output, std::string &indent,
                                      const ScName &stateAlias, const ScName &eventName)
 {
     const ScName eventNameShort = removePrefix(eventName);
 
     if (isHighlighted(eventName)) {
-        cout << indent << stateAlias << " : * <b>" << eventNameShort << "</b>\n";
+        output << indent << stateAlias << " : * <b>" << eventNameShort << "</b>\n";
     } else {
-        cout << indent << stateAlias << " : * " << eventNameShort << "\n";
+        output << indent << stateAlias << " : * " << eventNameShort << "\n";
     }
 }
 
-void PlantUmlGenerator::transitionLink(QTextStream &cout, QByteArray &indent,
+void PlantUmlGenerator::transitionLink(std::ostream &output, std::string &indent,
                                        bool isTransitionHighlighted, const ScName &stateAliasOrigin,
                                        const ScName &stateAliasTarget, const ScNameSet &eventNames)
 {
 
     if (isTransitionHighlighted) {
-        cout << indent << stateAliasOrigin << "-[#red,bold]-->" << stateAliasTarget << " : ";
+        output << indent << stateAliasOrigin << "-[#red,bold]-->" << stateAliasTarget << " : ";
     } else {
-        cout << indent << stateAliasOrigin << "-->" << stateAliasTarget << " : ";
+        output << indent << stateAliasOrigin << "-->" << stateAliasTarget << " : ";
     }
 
     for (auto eventName : eventNames) {
-        if (eventName.isEmpty()) {
+        if (eventName.empty()) {
             eventName = "<unknown>";
         }
 
         if (isHighlighted(eventName)) {
-            cout << "<b>" << removePrefix(eventName) << "</b>\\n";
+            output << "<b>" << removePrefix(eventName) << "</b>\\n";
         } else {
-            cout << removePrefix(eventName) << "\\n";
+            output << removePrefix(eventName) << "\\n";
         }
     }
 
-    cout << "\n";
+    output << "\n";
 }
