@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/kanje/bosce.svg?style=svg)](https://circleci.com/gh/kanje/bosce)
+
 # bosce
 Bosce, or **bo**ost::**s**tate**c**hart **e**xtractor, is a command line tool to extract
 information about <a href="https://www.boost.org/doc/libs/release/libs/statechart/doc/tutorial.html">
