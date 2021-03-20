@@ -7,7 +7,7 @@ user-friendly form, e.g. UML diagrams.
 It relies on <a href="http://man7.org/linux/man-pages/man1/objdump.1.html">objdump</a> to
 extract information from binaries and is primarily intended to be used in a Linux environment.
 
-CI status: [![CircleCI](https://circleci.com/gh/kanje/bosce.svg?style=svg)](https://circleci.com/gh/kanje/bosce)
+[![CircleCI](https://circleci.com/gh/kanje/bosce.svg?style=svg)](https://circleci.com/gh/kanje/bosce)
 
 ## Demo
 First, we need a binary with debug symbols to work on.
