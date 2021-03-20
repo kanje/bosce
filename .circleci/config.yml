@@ -1,0 +1,25 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: cimg/base:2021.02
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install \
+                cmake libgtest-dev clang-tidy libboost-dev libboost-filesystem-dev \
+                libboost-program-options-dev
+      - run:
+          name: Build project
+          command: |
+            mkdir build; cd build
+            cmake -DCMAKE_BUILD_TYPE=Release ..
+            cmake --build . -- -j4
+      - run:
+          name: Test project
+          command: |
+            cd build
+            ctest
