@@ -7,13 +7,14 @@
 ##
 
 cmake_minimum_required(VERSION 3.10)
-project(bosce CXX)
+project(bosce VERSION 1.1 LANGUAGES CXX)
 
 enable_testing()
 
 find_package(Boost REQUIRED COMPONENTS program_options filesystem)
 find_package(Threads REQUIRED)
 
+include(GNUInstallDirs)
 include(cmake/CompilerFlags.cmake)
 include(cmake/ClangTidy.cmake)
 
@@ -34,6 +35,13 @@ target_link_libraries(bosce
     Threads::Threads
     Boost::program_options
     Boost::filesystem
+)
+
+install(
+  TARGETS
+    bosce
+  RUNTIME DESTINATION
+    ${CMAKE_INSTALL_BINDIR}
 )
 
 add_subdirectory(test)
