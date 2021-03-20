@@ -13,14 +13,23 @@ jobs:
                 cmake libgtest-dev clang-tidy libboost-dev libboost-filesystem-dev \
                 libboost-program-options-dev
       - run:
-          name: Build and install project
+          name: Build project
           command: |
             mkdir build; cd build
             cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
-            cmake --build . --target demo -- -j4
-            cmake --build . --target install -- -j4
+            cmake --build . --target demo
+            cmake --build . -- -j4
       - run:
           name: Test project
           command: |
             cd build
             ctest
+      - run:
+          name: Install project
+          command: |
+            cd build
+            sudo cmake --build . --target install
+      - run:
+          name: Test installed binary
+          command: |
+            bosce build/demo -l
