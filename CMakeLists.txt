@@ -28,6 +28,7 @@ add_executable(bosce
     src/StmListGenerator.cpp
     src/TextGenerator.cpp
     src/PlantUmlGenerator.cpp
+    src/YamlGenerator.cpp
 )
 
 target_link_libraries(bosce
