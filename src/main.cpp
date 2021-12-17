@@ -13,6 +13,7 @@
 #include "PlantUmlGenerator.h"
 #include "StmListGenerator.h"
 #include "TextGenerator.h"
+#include "YamlGenerator.h"
 
 #include <boost/process.hpp>
 #include <boost/program_options.hpp>
@@ -49,7 +50,7 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
             ("stm,s", po::value<std::string>(&settings.stmName),
              "Generate an output for a specific state-machine")
             ("generator,g", po::value<std::string>(&settings.generatorName),
-             "Specify a generator (plantuml, stmlist, text)");
+             "Specify a generator (plantuml, stmlist, text, yaml)");
     // clang-format on
 
     po::options_description oHidden;
@@ -130,9 +131,12 @@ try {
         generator = std::make_unique<StmListGenerator>(model);
     } else if (settings.generatorName == "text") {
         generator = std::make_unique<TextGenerator>(model, highlightSet);
+    } else if (settings.generatorName == "yaml") {
+        generator = std::make_unique<YamlGenerator>(model, highlightSet);
     } else {
         std::cerr << "Invalid generator: " << settings.generatorName << "\n";
-        std::cerr << "Available generators: plantuml (default), stmlist and text\n" << std::endl;
+        std::cerr << "Available generators: plantuml (default), stmlist, text and yaml\n"
+                  << std::endl;
         return -1;
     }
 
@@ -171,7 +175,7 @@ try {
     }
 
     // Do not generate the output if an objdump strip is requested:
-    if (settings.isStripObjdump) {
+    if (settings.isExtractObjdump || settings.isStripObjdump) {
         return 0;
     }
 
