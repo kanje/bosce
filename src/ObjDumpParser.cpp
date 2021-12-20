@@ -82,12 +82,14 @@ inline bool expectAsmBytes(char *&data)
 }
 
 // 5c5c5e5:       e8 34 21 00 00          callq  5c5e71e <void foo::bar<T>(void*)>
+// 5c5c5e5:       e8 34 21 00 00          call  5c5e71e <void foo::bar<T>(void*)>
 bool ObjDumpParser::parseFunctionCall(char *&data, std::size_t size)
 {
     const char *const endOfData = data + size - 1;
 
     if (!(expectAddress(data) && expectString(data, ":\t") && expectAsmBytes(data)
-          && expectString(data, "callq  ") && expectAddress(data) && expectString(data, " <")))
+          && (expectString(data, "callq  ") || expectString(data, "call  ")) && expectAddress(data)
+          && expectString(data, " <")))
         return false;
 
     if (!eqString(endOfData, ">"))
