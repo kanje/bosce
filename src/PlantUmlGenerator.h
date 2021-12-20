@@ -26,6 +26,8 @@ private:
     void beginState(std::ostream &output, std::string &indent, const ScName &name,
                     const ScName &nameAlias);
     void endState(std::ostream &output, std::string &indent);
+    void historyPseudoState(std::ostream &output, const std::string &indent,
+                            const ScName &targetAlias, ScHistoryMode historyMode);
     void deferralLink(std::ostream &output, std::string &indent, const ScName &stateAlias,
                       const ScName &eventName);
     void transitionLink(std::ostream &output, std::string &indent, bool isTransitionHighlighted,

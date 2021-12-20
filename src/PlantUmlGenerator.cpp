@@ -37,6 +37,22 @@ static ScName removePrefix(const ScName &name)
     return res;
 }
 
+static const char *puHistoryState(ScHistoryMode historyMode) noexcept
+{
+    switch (historyMode) {
+    case ScHistoryMode::Deep:
+    case ScHistoryMode::Full:
+        return "[H*]";
+        break;
+    case ScHistoryMode::Shallow:
+        return "[H]";
+        break;
+    default:
+        break;
+    }
+    return "";
+}
+
 void PlantUmlGenerator::generate(std::ostream &output, const ScName &stmName)
 {
     output << "@startuml\n";
@@ -63,6 +79,11 @@ void PlantUmlGenerator::generate(std::ostream &output, const ScName &name, int i
     // Exclude the outerbox with a state machine name:
     if (indentLevel > 0) {
         beginState(output, indent, name, nameAlias);
+    }
+
+    // History pseudo-state:
+    if (auto historyMode = state.historyState.mode; historyMode != ScHistoryMode::None) {
+        historyPseudoState(output, indent, alias(state.historyState.initial), historyMode);
     }
 
     // Substates:
@@ -92,7 +113,7 @@ void PlantUmlGenerator::generate(std::ostream &output, const ScName &name, int i
     }
 
     // Transitions:
-    for (const auto &[targetName, eventNames] : state.transitions) {
+    for (const auto &[target, eventNames] : state.transitions) {
         bool isTransitionHighlighted = false;
         for (auto &eventName : eventNames) {
             if (!eventName.empty() && isHighlighted(eventName)) {
@@ -100,8 +121,14 @@ void PlantUmlGenerator::generate(std::ostream &output, const ScName &name, int i
             }
         }
 
-        transitionLink(output, indent, isTransitionHighlighted, nameAlias, alias(targetName),
-                       eventNames);
+        auto targetAlias = alias(target.name);
+
+        // History states in PlantUML can be references as StateName[H] or StateName[H*]:
+        if (target.historyMode != ScHistoryMode::None) {
+            targetAlias.append(puHistoryState(target.historyMode));
+        }
+
+        transitionLink(output, indent, isTransitionHighlighted, nameAlias, targetAlias, eventNames);
     }
 }
 
@@ -131,6 +158,12 @@ void PlantUmlGenerator::endState(std::ostream &output, std::string &indent)
 {
     indent.erase(indent.size() - 2);
     output << indent << "}\n";
+}
+
+void PlantUmlGenerator::historyPseudoState(std::ostream &output, const std::string &indent,
+                                           const ScName &targetAlias, ScHistoryMode historyMode)
+{
+    output << indent << puHistoryState(historyMode) << " --> " << targetAlias << "\n";
 }
 
 void PlantUmlGenerator::deferralLink(std::ostream &output, std::string &indent,

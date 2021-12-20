@@ -36,7 +36,8 @@ void TextGenerator::generate(std::ostream &output, const ScName &stmName)
         if (!state.transitions.empty()) {
             output << "Transitions:\n";
             for (const auto &[target, events] : state.transitions) {
-                output << "==> " << hlText(target) << "\n";
+                output << "==> " << hlText(target.name)
+                       << (target.historyMode != ScHistoryMode::None ? " (history)\n" : "\n");
                 for (const auto &event : events) {
                     output << "    ** " << hlText(event) << "\n";
                 }

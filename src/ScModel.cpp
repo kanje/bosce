@@ -4,17 +4,18 @@ const ScName ScModel::RootScName = "[root]";
 
 void ScModel::addStateMachine(const ScName &name, const ScName &initialState)
 {
-    addState(name, RootScName, 0, {initialState});
+    addState(name, RootScName, 0, {initialState}, ScHistoryMode::None);
 }
 
 void ScModel::addState(const ScName &name, const ScName &parent, ScRegionNum regionNum,
-                       const ScNameList &initialSubstates)
+                       const ScNameList &initialSubstates, ScHistoryMode historyMode)
 {
     auto &state = m_states[name];
     m_activeState = &state;
 
     if (!state.isDefined()) {
         state.parent = parent;
+        state.historyState.mode = historyMode;
 
         const auto nrOrthRegions = initialSubstates.size();
         state.regions.resize(nrOrthRegions);
@@ -31,9 +32,18 @@ void ScModel::addState(const ScName &name, const ScName &parent, ScRegionNum reg
     }
 }
 
-void ScModel::addTransition(const ScName &target, const ScName &event)
+void ScModel::addTransition(const ScName &target, const ScName &event, ScHistoryMode historyMode)
 {
-    m_activeState->transitions[target].insert(event);
+    if (historyMode == ScHistoryMode::None) {
+        m_activeState->transitions[ScTarget(target)].insert(event);
+    } else {
+        auto &targetState = m_states[target];
+        if (targetState.isDefined()) {
+            auto &parent = targetState.parent;
+            m_activeState->transitions[ScTarget(parent, historyMode)].insert(event);
+            addHistory(parent, target, historyMode);
+        }
+    }
 }
 
 void ScModel::addDeferral(const ScName &event)
@@ -48,6 +58,13 @@ void ScModel::addSubstate(const ScName &name, const ScName &substate, ScRegionNu
         substates.resize(regionNum + 1);
     }
     substates[regionNum].states.insert(substate);
+}
+
+void ScModel::addHistory(const ScName &name, const ScName &initial, ScHistoryMode mode) noexcept
+{
+    auto &historyState = m_states[name].historyState;
+    historyState.initial = initial;
+    historyState.mode = mode;
 }
 
 void ScModel::setActiveState(const ScName &name)
