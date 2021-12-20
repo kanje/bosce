@@ -69,9 +69,14 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
     auto isSpecified = [&vm](const char *optName) { return vm.count(optName) > 0; };
 
     if (isSpecified("help")) {
-        std::cout << "bosce: BOost State Chart Extractor (from objdump)\n" << std::endl;
-        std::cout << oVisible << std::endl;
+        std::cout << "bosce: BOost State Chart Extractor (from objdump)\n\n"
+                     "Usage:\n  bosce <input file> [options]\n\n"
+                  << oVisible << std::endl;
         return false;
+    }
+
+    if (!isSpecified("input")) {
+        throw po::error("input file is not specified");
     }
 
     settings.isUseObjdump = isSpecified("objdump");
