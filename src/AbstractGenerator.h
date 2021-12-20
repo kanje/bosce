@@ -34,3 +34,18 @@ protected:
     const ScModel &m_model;
     const ScNameSet m_highlightSet;
 };
+
+inline const char *toString(ScHistoryMode mode) noexcept
+{
+    switch (mode) {
+    case ScHistoryMode::None:
+        return "none";
+    case ScHistoryMode::Shallow:
+        return "shallow";
+    case ScHistoryMode::Deep:
+        return "deep";
+    case ScHistoryMode::Full:
+        return "full";
+    }
+    return "";
+};

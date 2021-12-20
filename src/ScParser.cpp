@@ -76,6 +76,23 @@ inline char *matchAngleArgument(char *&data, bool skipToEnd = false)
     }
 }
 
+inline std::pair<ScName, ScHistoryMode> matchTransitionTarget(char *&data) noexcept
+{
+    char *target = matchAngleArgument(data);
+    if (expectStartsWith(target, "boost::statechart::")) {
+        if (expectStartsWith(target, "deep_history<")) {
+            return {matchAngleArgument(target), ScHistoryMode::Deep};
+        }
+        if (expectStartsWith(target, "shallow_history<")) {
+            return {matchAngleArgument(target), ScHistoryMode::Shallow};
+        }
+        if (expectStartsWith(target, "full_history<")) {
+            return {matchAngleArgument(target), ScHistoryMode::Full};
+        }
+    }
+    return {target, ScHistoryMode::None};
+}
+
 bool ScParser::parseFunctionDecl(char *&data)
 {
     m_hasCurrentState = false;
@@ -120,8 +137,8 @@ bool ScParser::parseFunctionCall(char *&data)
     if (expectStartsWith(data, "boost::statechart::simple_state<")) {
         matchAngleArgument(data, true);
         if (expectStartsWith(data, "::transit<")) {
-            std::string target = matchAngleArgument(data);
-            m_model.addTransition(target, m_currentEvent);
+            auto [target, historyMode] = matchTransitionTarget(data);
+            m_model.addTransition(target, m_currentEvent, historyMode);
         } else if (expectStartsWith(data, "::discard_event()")) {
             m_model.addTransition(m_currentState, m_currentEvent);
         } else if (expectStartsWith(data, "::defer_event()")) {
@@ -168,6 +185,21 @@ static ScNameList parseInitialSubstateList(char *mplList)
     return list;
 }
 
+static ScHistoryMode parseHistoryMode(char *historyMode) noexcept
+{
+    if (expectStartsWith(historyMode, "(boost::statechart::history_mode)")) {
+        char *end;
+        auto value = std::strtoul(historyMode, &end, 10);
+        const long totalModes = 3;
+        if (*end != 0 || value > totalModes) {
+            return ScHistoryMode::None;
+        }
+        return static_cast<ScHistoryMode>(value);
+    }
+
+    return ScHistoryMode::None;
+}
+
 void ScParser::parseReactionList(char *mplList)
 {
     /*
@@ -194,8 +226,8 @@ void ScParser::parseReactionList(char *mplList)
 
             if (expectStartsWith(reaction, "boost::statechart::transition<")) {
                 std::string event = matchAngleArgument(reaction);
-                std::string target = matchAngleArgument(reaction);
-                m_model.addTransition(target, event);
+                auto [target, historyMode] = matchTransitionTarget(reaction);
+                m_model.addTransition(target, event, historyMode);
             } else if (expectStartsWith(reaction, "boost::statechart::deferral<")) {
                 std::string event = matchAngleArgument(reaction);
                 m_model.addDeferral(event);
@@ -239,9 +271,10 @@ void ScParser::parseSimpleState(char *&data)
         matchAngleArgument(data);       // skip to a list of initial substates
     }
 
-    m_model.addState(name, parent, orthRegion, parseInitialSubstateList(matchAngleArgument(data)));
+    auto initialSubstates = parseInitialSubstateList(matchAngleArgument(data));
+    auto historyMode = parseHistoryMode(matchAngleArgument(data));
 
-    matchAngleArgument(data, true); // skip history_mode
+    m_model.addState(name, parent, orthRegion, initialSubstates, historyMode);
 
     if (expectStartsWith(data, "::local_react<")) {
         parseReactionList(matchAngleArgument(data));

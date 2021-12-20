@@ -8,6 +8,15 @@
 
 #include "YamlGenerator.h"
 
+static void print(std::ostream &output, const ScHistoryState &historyState) noexcept
+{
+    if (historyState.mode != ScHistoryMode::None) {
+        output << "  history:\n";
+        output << "    mode: " << toString(historyState.mode) << "\n";
+        output << "    initial: " << historyState.initial << "\n";
+    }
+}
+
 static void print(std::ostream &output, const ScRegionList &regions) noexcept
 {
     if (regions.size() > 0) {
@@ -26,12 +35,15 @@ static void print(std::ostream &output, const ScRegionList &regions) noexcept
     }
 }
 
-static void print(std::ostream &output, const std::map<ScName, ScNameSet> &transitions) noexcept
+static void print(std::ostream &output, const ScTransitionMap &transitions) noexcept
 {
     if (!transitions.empty()) {
         output << "  transitions:\n";
         for (const auto &[target, events] : transitions) {
-            output << "    - target: " << target << "\n";
+            output << "    - target: " << target.name << "\n";
+            if (target.historyMode != ScHistoryMode::None) {
+                output << "      history: " << toString(target.historyMode) << "\n";
+            }
             output << "      events:\n";
             for (const auto &event : events) {
                 output << "        - " << event << "\n";
@@ -64,6 +76,7 @@ void YamlGenerator::generate(std::ostream &output, const ScName &stmName)
             output << "  parent: " << state.parent << "\n";
         }
 
+        print(output, state.historyState);
         print(output, state.regions);
         print(output, state.transitions);
         print(output, state.deferrals);
