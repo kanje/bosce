@@ -8,7 +8,7 @@
 
 #include "YamlGenerator.h"
 
-static void print(std::ostream &output, const std::vector<ScSubstateSet> &regions) noexcept
+static void print(std::ostream &output, const ScRegionList &regions) noexcept
 {
     if (regions.size() > 0) {
         std::string indent;
@@ -64,7 +64,7 @@ void YamlGenerator::generate(std::ostream &output, const ScName &stmName)
             output << "  parent: " << state.parent << "\n";
         }
 
-        print(output, state.substates);
+        print(output, state.regions);
         print(output, state.transitions);
         print(output, state.deferrals);
 
