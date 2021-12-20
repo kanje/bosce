@@ -18,6 +18,7 @@ endmacro()
 add_plantuml_test(StopWatch 01 StopWatch)
 add_plantuml_test(InitialStateBeforeStm 02 StopWatch)
 add_plantuml_test(CustomTransitionToTemplateState 03 SM)
+add_plantuml_test(HistoryPseudoState 04 Camera)
 
 add_custom_target(demo
   COMMAND

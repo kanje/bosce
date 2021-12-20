@@ -41,7 +41,7 @@ void ObjDumpParser::parse(std::istream &input, bool doStripInput)
 
         if (doStripInput && isHandled) {
             boost::replace_all(originalBuf, "mpl_::na, ", "");
-            std::cout << originalBuf;
+            std::cout << originalBuf << "\n";
         }
     }
 

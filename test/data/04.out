@@ -1,0 +1,30 @@
+@startuml
+note "Camera\nGenerated on 00.00.0000" as NoteGenerated #A2F2A2
+[*] --> 2
+  state "NotShooting" as 2 {
+    [H*] --> 3
+    [*] --> 3
+    state "Configuring" as 4 {
+    }
+    4-->3 : EvConfig\n
+    state "Idle" as 3 {
+    }
+    3-->4 : EvConfig\n
+  }
+  2-->5 : EvShutterHalf\n
+  state "Shooting" as 5 {
+    [*] --> 6
+    state "Focused" as 7 {
+    }
+    7-->7 : EvShutterFull\n
+    7-->8 : EvShutterFull\n
+    state "Focusing" as 6 {
+    }
+    6 : Deferrals:
+    6 : * EvShutterFull
+    6-->7 : EvInFocus\n
+    state "Storing" as 8 {
+    }
+  }
+  5-->2[H*] : EvShutterRelease\n
+@enduml
