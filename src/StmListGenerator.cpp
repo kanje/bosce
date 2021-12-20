@@ -16,11 +16,11 @@ void StmListGenerator::generate(std::ostream &output, const ScName &stmName)
         output << "Note: discarding a state-machine name\n";
     }
 
-    if (rootState.substates.empty()) {
+    if (rootState.regions.empty()) {
         output << "No state-machines found\n";
     } else {
         output << "Available state-machines:\n";
-        for (const auto &stm : rootState.substates[0].states) {
+        for (const auto &stm : rootState.regions[0].states) {
             output << "    " << stm << "\n";
         }
     }

@@ -66,13 +66,13 @@ void PlantUmlGenerator::generate(std::ostream &output, const ScName &name, int i
     }
 
     // Substates:
-    const auto nrOrthRegions = state.substates.size();
-    for (ScRegion orthRegion = 0; orthRegion < nrOrthRegions; orthRegion++) {
-        if (orthRegion > 0) {
+    const auto totalRegions = state.regions.size();
+    for (ScRegionNum regionNum = 0; regionNum < totalRegions; regionNum++) {
+        if (regionNum > 0) {
             output << indent << "--\n";
         }
 
-        const auto &substates = state.substates[orthRegion];
+        const auto &substates = state.regions[regionNum];
         output << indent << "[*] --> " << alias(substates.initial) << "\n";
         for (const auto &substateName : substates.states) {
             generate(output, substateName, indentLevel + 1);

@@ -16,15 +16,12 @@
 // Name of state-machine, state or event.
 using ScName = std::string;
 
-// Number of an orthogonal region.
-using ScRegion = std::size_t;
-
 // Set of names.
 using ScNameSet = std::set<ScName>;
 using ScNameList = std::vector<ScName>;
 
-// Set of substates in one orthogonal region.
-struct ScSubstateSet final
+// Orthogonal region.
+struct ScRegion final
 {
     // Initial state.
     ScName initial;
@@ -33,19 +30,21 @@ struct ScSubstateSet final
     ScNameSet states;
 };
 
+// List of orthogonal regions.
+using ScRegionList = std::vector<ScRegion>;
+
+// Number of an orthogonal region.
+using ScRegionNum = ScRegionList::size_type;
+
+// Map of transitions (target state -> what events lead there).
+using ScTransitionMap = std::map<ScName, ScNameSet /* set of events */>;
+
 // State or state-machine.
 struct ScState final
 {
-    // Parent state name. If empty, it is a state-machine.
-    ScName parent;
-
-    // List of orthogonal substate sets.
-    std::vector<ScSubstateSet> substates;
-
-    // Set of transitions (target state -> what events lead there).
-    std::map<ScName /* target */, ScNameSet /* set of events */> transitions;
-
-    // Set of deferred events.
+    ScName parent; // If empty, it is a state-machine.
+    ScRegionList regions;
+    ScTransitionMap transitions;
     ScNameSet deferrals;
 
     bool isDefined() const
@@ -64,7 +63,7 @@ public:
 
 public:
     void addStateMachine(const ScName &name, const ScName &initialState);
-    void addState(const ScName &name, const ScName &parent, ScRegion orthRegion,
+    void addState(const ScName &name, const ScName &parent, ScRegionNum regionNum,
                   const ScNameList &initialSubstates);
     void addTransition(const ScName &target, const ScName &event);
     void addDeferral(const ScName &event);
@@ -77,7 +76,7 @@ public:
     }
 
 private:
-    void addSubstate(const ScName &name, const ScName &substate, ScRegion orthRegion);
+    void addSubstate(const ScName &name, const ScName &substate, ScRegionNum regionNum);
 
 private:
     ScStateMap m_states;

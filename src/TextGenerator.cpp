@@ -27,9 +27,9 @@ void TextGenerator::generate(std::ostream &output, const ScName &stmName)
     for (const auto &[name, state] : states) {
         output << "Name: " << hlText(name) << "\n";
         output << "Parent: " << hlText(state.parent) << "\n";
-        for (std::size_t i = 0; i < state.substates.size(); i++) {
-            output << "Substates (" << i << ") [" << state.substates[i].initial << "]:\n";
-            for (const auto &substate : state.substates[i].states) {
+        for (ScRegionNum i = 0; i < state.regions.size(); i++) {
+            output << "Substates (" << i << ") [" << state.regions[i].initial << "]:\n";
+            for (const auto &substate : state.regions[i].states) {
                 output << "    " << hlText(substate) << "\n";
             }
         }
