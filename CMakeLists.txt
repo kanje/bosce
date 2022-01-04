@@ -15,8 +15,9 @@ find_package(Boost REQUIRED COMPONENTS program_options filesystem)
 find_package(Threads REQUIRED)
 
 include(GNUInstallDirs)
-include(cmake/CompilerFlags.cmake)
+include(cmake/AddressSanitizer.cmake)
 include(cmake/ClangTidy.cmake)
+include(cmake/CompilerFlags.cmake)
 
 add_executable(bosce
     src/main.cpp
