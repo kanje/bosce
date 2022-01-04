@@ -327,7 +327,17 @@ bool ScParser::parseReactMethod(char *&data)
     }
 
     m_currentState = function;
-    m_currentEvent = matchName(data, ' ');
+
+    char *eventName = matchName(data, ' ');
+    if (eventName == nullptr) {
+        /* Sometimes events are not passed as const&.
+         * *state*::react(*event*) */
+        eventName = matchName(data, ')');
+        if (eventName == nullptr) {
+            return false;
+        }
+    }
+    m_currentEvent = eventName;
     if (m_currentEvent.empty()) {
         return false;
     }
