@@ -22,11 +22,27 @@ add_plantuml_test(HistoryPseudoState 04 Camera)
 
 add_custom_target(demo
   COMMAND
-    ${CMAKE_CXX_COMPILER} -g ${CMAKE_CURRENT_LIST_DIR}/src/demo.cpp -o demo
+    ${CMAKE_CXX_COMPILER} -g ${CMAKE_CURRENT_LIST_DIR}/src/demo/main.cpp -o demo
   WORKING_DIRECTORY
     ${CMAKE_BINARY_DIR}
   SOURCES
-    src/demo.cpp
+    src/demo/main.cpp
   COMMENT
     "Building a demo statechert binary"
+)
+
+add_custom_target(shared
+  COMMAND
+    ${CMAKE_CXX_COMPILER} -g ${CMAKE_CURRENT_LIST_DIR}/src/shared/shared.cpp -fPIC -shared
+        -o libshared.so
+  COMMAND
+    ${CMAKE_CXX_COMPILER} -g ${CMAKE_CURRENT_LIST_DIR}/src/shared/main.cpp -L${CMAKE_BINARY_DIR} -lshared -o shared
+  WORKING_DIRECTORY
+    ${CMAKE_BINARY_DIR}
+  SOURCES
+    src/shared/shared.cpp
+    src/shared/shared.h
+    src/shared/main.cpp
+  COMMENT
+    "Building a shared statechert binary"
 )
