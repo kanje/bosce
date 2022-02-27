@@ -25,7 +25,7 @@ namespace bp = boost::process;
 
 struct Settings
 {
-    std::string inputFile;
+    std::vector<std::string> inputFiles;
     std::string stmName;
     std::string generatorName;
     std::vector<std::string> highlightNameList;
@@ -41,9 +41,9 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
     // clang-format off
     oVisible.add_options()
             ("help,h", "Show this help message")
-            ("objdump,O", "An input file is an objdump instead of binary")
+            ("objdump,O", "Input files is an objdump instead of binary")
             ("extract,X", "Only extract an objdump out of an input binary")
-            ("strip,S", "Strip an objdump to contain only relevat data")
+            ("strip,S", "Strip an objdump to contain only relevant data")
             ("list,l", "List all state-machine names")
             ("highlight,t", po::value<std::vector<std::string>>(&settings.highlightNameList),
              "Highlight given names in the generated state-machine output (multiple use possible)")
@@ -54,7 +54,9 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
     // clang-format on
 
     po::options_description oHidden;
-    oHidden.add_options()("input", po::value<std::string>(&settings.inputFile), "Input file");
+    oHidden.add_options()("input",
+                          po::value<std::vector<std::string>>(&settings.inputFiles)->multitoken(),
+                          "Input files");
 
     po::positional_options_description poDesc;
     poDesc.add("input", -1);
@@ -70,7 +72,7 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
 
     if (isSpecified("help")) {
         std::cout << "bosce: BOost State Chart Extractor (from objdump)\n\n"
-                     "Usage:\n  bosce <input file> [options]\n\n"
+                     "Usage:\n  bosce <input files> [options]\n\n"
                   << oVisible << std::endl;
         return false;
     }
@@ -107,6 +109,40 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
     }
 
     return true;
+}
+
+static void parseInput(const std::string &inputFile, const Settings &settings,
+                       ObjDumpParser &objDumpParser)
+{
+    if (settings.isUseObjdump) {
+        /* Use a pre-generated objdump file */
+        std::ifstream file(inputFile);
+        if (!file) {
+            throw std::runtime_error("Cannot open an input file");
+        }
+        objDumpParser.parse(file, settings.isStripObjdump);
+
+    } else {
+        /* Generate an objfile on the fly. */
+        const auto isFullExtractMode = settings.isExtractObjdump && !settings.isStripObjdump;
+        bp::ipstream stream;
+
+        auto objdump = [&](auto &output) {
+            return bp::child(bp::search_path("objdump"), "-j", ".text", "-C", "-d", inputFile,
+                             bp::std_out > output, bp::std_err > stderr);
+        };
+
+        auto child = isFullExtractMode ? objdump(stdout) : objdump(stream);
+        if (!isFullExtractMode) {
+            objDumpParser.parse(stream, settings.isStripObjdump);
+        }
+
+        child.wait();
+        if (child.exit_code() != 0) {
+            throw std::runtime_error("objdump returned " + std::to_string(child.exit_code())
+                                     + "; invalid input binary name?");
+        }
+    }
 }
 
 int main(int argc, char *argv[])
@@ -149,34 +185,8 @@ try {
     ScParser scParser(model);
     ObjDumpParser objDumpParser(scParser);
 
-    if (settings.isUseObjdump) {
-        /* Use a pre-generated objdump file */
-        std::ifstream file(settings.inputFile);
-        if (!file) {
-            throw std::runtime_error("Cannot open an input file");
-        }
-        objDumpParser.parse(file, settings.isStripObjdump);
-
-    } else {
-        /* Generate an objfile on the fly. */
-        const auto isFullExtractMode = settings.isExtractObjdump && !settings.isStripObjdump;
-        bp::ipstream stream;
-
-        auto objdump = [&](auto &output) {
-            return bp::child(bp::search_path("objdump"), "-j", ".text", "-C", "-d",
-                             settings.inputFile, bp::std_out > output, bp::std_err > stderr);
-        };
-
-        auto child = isFullExtractMode ? objdump(stdout) : objdump(stream);
-        if (!isFullExtractMode) {
-            objDumpParser.parse(stream, settings.isStripObjdump);
-        }
-
-        child.wait();
-        if (child.exit_code() != 0) {
-            throw std::runtime_error("objdump returned " + std::to_string(child.exit_code())
-                                     + "; invalid input binary name?");
-        }
+    for (const auto &inputFile : settings.inputFiles) {
+        parseInput(inputFile, settings, objDumpParser);
     }
 
     // Do not generate the output if an objdump strip is requested:
