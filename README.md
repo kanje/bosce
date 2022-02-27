@@ -30,6 +30,31 @@ Finally, we use PlantUML to generate a PNG file and open it.
     $ plantuml uml.pu
     $ xdg-open uml.png
 
+## Usage
+
+    bosce <input files> [options]
+
+### Input Files
+
+Bosce accepts one or more input files:
+- Binaries with debug symbols (by default), or
+- Text files with `objdump` output (if option `-O` is used).
+
+All information extracted from input files is merged into a single model. This is
+useful, e.g. if a state machine is split between a shared library and a binary using
+this library.
+
+### Options
+
+- `-h`, `--help`: Show a help message
+- `-O`, `--objdump`: Input files is an objdump instead of binary
+- `-X`, `--extract`: Only extract an `objdump out of an input binary
+- `-S`, `--strip`: Strip an objdump to contain only relevant data
+- `-l`, `--list`: List all state-machine names
+- `-t <name>`, `--highlight <name>`: Highlight given names in the generated output
+- `-s <name>`, `--stm <name>`: Generate an output for a specific state-machine
+- `-g <gen>`, `--generator <gen>`: Specify a generator (plantuml, stmlist, text, yaml)
+
 ## Build Instructions
 Bosce depends on `boost::program_options` and `boost::process` and requires a C++17 compatible compiler.
 
