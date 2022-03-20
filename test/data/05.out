@@ -1,0 +1,108 @@
+@startuml
+note "finite_state_machine::SmMachine\nGenerated on 00.00.0000" as NoteGenerated #A2F2A2
+[*] --> 2
+  state "StActive" as 2 {
+    [*] --> 3
+    state "StBreaking<(ControlGroup)0, true>" as 4 {
+    }
+    4 : Deferrals:
+    4 : * EvPositionControlPressed<(ControlGroup)0>
+    4 : * EvThrustControlPressed<(ControlGroup)0>
+    4 : * EvVelocityControlPressed<(ControlGroup)0>
+    4-->3 : EvNegligibleVelocity<(ControlGroup)0>\nEvPositionCommandReceived<(ControlGroup)0>\n
+    state "StJoystickControl<(ControlGroup)0, true>" as 5 {
+      [H*] --> 6
+      [*] --> 6
+      state "StJoystickPositionControl<(ControlGroup)0, true>" as 7 {
+      }
+      7-->6 : EvThrustControlPressed<(ControlGroup)0>\n
+      7-->8 : EvVelocityControlPressed<(ControlGroup)0>\n
+      state "StJoystickThrustControl<(ControlGroup)0, true>" as 6 {
+      }
+      6-->7 : EvPositionControlPressed<(ControlGroup)0>\n
+      6-->8 : EvVelocityControlPressed<(ControlGroup)0>\n
+      state "StJoystickVelocityControl<(ControlGroup)0, true>" as 8 {
+      }
+      8-->7 : EvPositionControlPressed<(ControlGroup)0>\n
+      8-->6 : EvThrustControlPressed<(ControlGroup)0>\n
+    }
+    5-->4 : EvJoystickCommandTimeout<(ControlGroup)0>\n
+    state "StPositionTracking<(ControlGroup)0, true>" as 3 {
+    }
+    3 : Deferrals:
+    3 : * EvPositionControlPressed<(ControlGroup)0>
+    3 : * EvThrustControlPressed<(ControlGroup)0>
+    3 : * EvVelocityControlPressed<(ControlGroup)0>
+    3-->5 : EvJoystickCommandReceived<(ControlGroup)0>\n
+    3-->9 : EvVelocityCommandReceived<(ControlGroup)0>\n
+    state "StVelocityTracking<(ControlGroup)0, true>" as 9 {
+    }
+    9 : Deferrals:
+    9 : * EvPositionControlPressed<(ControlGroup)0>
+    9 : * EvThrustControlPressed<(ControlGroup)0>
+    9 : * EvVelocityControlPressed<(ControlGroup)0>
+    9-->5 : EvJoystickCommandReceived<(ControlGroup)0>\n
+    9-->3 : EvVelocityCommandTimeout<(ControlGroup)0>\n
+    --
+    [*] --> 10
+    state "StBreaking<(ControlGroup)1, true>" as 11 {
+    }
+    11 : Deferrals:
+    11 : * EvPositionControlPressed<(ControlGroup)1>
+    11 : * EvThrustControlPressed<(ControlGroup)1>
+    11 : * EvVelocityControlPressed<(ControlGroup)1>
+    11-->10 : EvNegligibleVelocity<(ControlGroup)1>\nEvPositionCommandReceived<(ControlGroup)1>\n
+    state "StJoystickControl<(ControlGroup)1, true>" as 12 {
+      [H*] --> 13
+      [*] --> 13
+      state "StJoystickPositionControl<(ControlGroup)1, true>" as 14 {
+      }
+      14-->13 : EvThrustControlPressed<(ControlGroup)1>\n
+      14-->15 : EvVelocityControlPressed<(ControlGroup)1>\n
+      state "StJoystickThrustControl<(ControlGroup)1, true>" as 13 {
+      }
+      13-->14 : EvPositionControlPressed<(ControlGroup)1>\n
+      13-->15 : EvVelocityControlPressed<(ControlGroup)1>\n
+      state "StJoystickVelocityControl<(ControlGroup)1, true>" as 15 {
+      }
+      15-->14 : EvPositionControlPressed<(ControlGroup)1>\n
+      15-->13 : EvThrustControlPressed<(ControlGroup)1>\n
+    }
+    12-->11 : EvJoystickCommandTimeout<(ControlGroup)1>\n
+    state "StPositionTracking<(ControlGroup)1, true>" as 10 {
+    }
+    10 : Deferrals:
+    10 : * EvPositionControlPressed<(ControlGroup)1>
+    10 : * EvThrustControlPressed<(ControlGroup)1>
+    10 : * EvVelocityControlPressed<(ControlGroup)1>
+    10-->12 : EvJoystickCommandReceived<(ControlGroup)1>\n
+    10-->16 : EvVelocityCommandReceived<(ControlGroup)1>\n
+    state "StVelocityTracking<(ControlGroup)1, true>" as 16 {
+    }
+    16 : Deferrals:
+    16 : * EvPositionControlPressed<(ControlGroup)1>
+    16 : * EvThrustControlPressed<(ControlGroup)1>
+    16 : * EvVelocityControlPressed<(ControlGroup)1>
+    16-->12 : EvJoystickCommandReceived<(ControlGroup)1>\n
+    16-->10 : EvVelocityCommandTimeout<(ControlGroup)1>\n
+    --
+    [*] --> 17
+    state "StJoystickControl<(ControlGroup)2, false>" as 18 {
+      [H*] --> 19
+      [*] --> 19
+      state "StJoystickPositionControl<(ControlGroup)2, false>" as 20 {
+      }
+      20-->19 : EvThrustControlPressed<(ControlGroup)2>\n
+      state "StJoystickThrustControl<(ControlGroup)2, false>" as 19 {
+      }
+      19-->20 : EvPositionControlPressed<(ControlGroup)2>\n
+    }
+    18-->17 : EvJoystickCommandTimeout<(ControlGroup)2>\n
+    state "StPositionTracking<(ControlGroup)2, false>" as 17 {
+    }
+    17 : Deferrals:
+    17 : * EvPositionControlPressed<(ControlGroup)2>
+    17 : * EvThrustControlPressed<(ControlGroup)2>
+    17-->18 : EvJoystickCommandReceived<(ControlGroup)2>\n
+  }
+@enduml
