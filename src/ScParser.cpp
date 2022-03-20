@@ -76,9 +76,8 @@ inline char *matchAngleArgument(char *&data, bool skipToEnd = false)
     }
 }
 
-inline std::pair<ScName, ScHistoryMode> matchTransitionTarget(char *&data) noexcept
+static ScTarget parseStateHistory(char *target) noexcept
 {
-    char *target = matchAngleArgument(data);
     if (expectStartsWith(target, "boost::statechart::")) {
         if (expectStartsWith(target, "deep_history<")) {
             return {matchAngleArgument(target), ScHistoryMode::Deep};
@@ -91,6 +90,12 @@ inline std::pair<ScName, ScHistoryMode> matchTransitionTarget(char *&data) noexc
         }
     }
     return {target, ScHistoryMode::None};
+}
+
+static ScTarget matchTransitionTarget(char *&data) noexcept
+{
+    char *target = matchAngleArgument(data);
+    return parseStateHistory(target);
 }
 
 bool ScParser::parseFunctionDecl(char *&data)
@@ -157,9 +162,9 @@ void ScParser::parseStateMachine(char *&data)
     m_model.addStateMachine(name, initialState);
 }
 
-static ScNameList parseInitialSubstateList(char *mplList)
+static ScTargetList parseInitialSubstateList(char *mplList)
 {
-    ScNameList list;
+    ScTargetList list;
 
     if (expectStartsWith(mplList, "boost::mpl::list")) {
         expectAddress(mplList);
@@ -176,10 +181,10 @@ static ScNameList parseInitialSubstateList(char *mplList)
                 break;
             }
 
-            list.push_back(substate);
+            list.push_back(parseStateHistory(substate));
         }
     } else {
-        list.push_back(mplList);
+        list.push_back({mplList});
     }
 
     return list;
@@ -247,12 +252,24 @@ void ScParser::parseSimpleState(char *&data)
      *
      * With orthogonal region in a parent state:
      *
-     * simple_state<state-name,
-     *              boost::statechart::simple_state<parent-state, grandparent-state,
-     *                                              boost::mpl::list<initial-substate, mpl_::na,
-     * ...>, (boost::statechart::history_mode)0>::orthogonal<(unsigned char)0>,
-     *              boost::mpl::list<initial-substate, mpl_::na, ...>,
-     *              (boost::statechart::history_mode)0>
+     * simple_state<
+     *   state-name,
+     *   boost::statechart::simple_state<
+     *     parent-state,
+     *     grandparent-state,
+     *     boost::mpl::list<
+     *       initial-parent-substate,
+     *       mpl_::na,
+     *       ...>,
+     *     (boost::statechart::history_mode)0>::orthogonal<(unsigned char)0>,
+     *   boost::mpl::list<
+     *     initial-substate,
+     *     mpl_::na,
+     *     ...>,
+     *   (boost::statechart::history_mode)0>
+     *
+     * initial-substate can be wrapped with a history marker, e.g.
+     *   boost::statechart::deep_history<state-name>
      */
 
     ScName name = matchAngleArgument(data);

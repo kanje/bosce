@@ -63,9 +63,15 @@ struct ScTarget final
     // Is target a history pseudo-state?
     ScHistoryMode historyMode;
 
-    explicit ScTarget(ScName name, ScHistoryMode historyMode = ScHistoryMode::None) noexcept
+    ScTarget(ScName name, ScHistoryMode historyMode) noexcept
         : name(std::move(name))
         , historyMode(historyMode)
+    {
+    }
+
+    ScTarget(ScName name) noexcept
+        : name(std::move(name))
+        , historyMode(ScHistoryMode::None)
     {
     }
 
@@ -74,6 +80,9 @@ struct ScTarget final
         return std::tie(name, historyMode) < std::tie(other.name, other.historyMode);
     }
 };
+
+// List of targets.
+using ScTargetList = std::vector<ScTarget>;
 
 // Map of transitions (target state -> what events lead there).
 using ScTransitionMap = std::map<ScTarget, ScNameSet /* set of events */>;
@@ -104,7 +113,7 @@ public:
 public:
     void addStateMachine(const ScName &name, const ScName &initialState);
     void addState(const ScName &name, const ScName &parent, ScRegionNum regionNum,
-                  const ScNameList &initialSubstates, ScHistoryMode historyMode);
+                  const ScTargetList &initialSubstates, ScHistoryMode historyMode);
     void addTransition(const ScName &target, const ScName &event,
                        ScHistoryMode historyMode = ScHistoryMode::None);
     void addDeferral(const ScName &event);

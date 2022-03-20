@@ -8,7 +8,7 @@ void ScModel::addStateMachine(const ScName &name, const ScName &initialState)
 }
 
 void ScModel::addState(const ScName &name, const ScName &parent, ScRegionNum regionNum,
-                       const ScNameList &initialSubstates, ScHistoryMode historyMode)
+                       const ScTargetList &initialSubstates, ScHistoryMode historyMode)
 {
     auto &state = m_states[name];
     m_activeState = &state;
@@ -21,11 +21,14 @@ void ScModel::addState(const ScName &name, const ScName &parent, ScRegionNum reg
         state.regions.resize(nrOrthRegions);
 
         for (std::size_t i = 0; i < nrOrthRegions; i++) {
-            const ScName &substate = initialSubstates[i];
+            const ScName &substate = initialSubstates[i].name;
             ScRegion &substateSet = state.regions[i];
 
             substateSet.initial = substate;
             substateSet.states.insert(substate);
+            if (initialSubstates[i].historyMode != ScHistoryMode::None) {
+                state.historyState.initial = substate;
+            }
         }
 
         addSubstate(parent, name, regionNum);
