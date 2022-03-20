@@ -10,29 +10,23 @@
 
 #include <iomanip>
 
-static ScName removePrefix(const ScName &name)
+static ScName removeNamespaces(const ScName &name)
 {
-    int nrAngles = 0;
-    const char *data = name.data();
-    const char *res = data;
+    ScName res;
+    res.reserve(name.size());
 
-    while (*data) {
-        switch (*data) {
-        case ':':
-            if (nrAngles == 0)
-                res = data + 1;
-            break;
+    auto isNameChar = [](char c) { return isalnum(c) || c == '_'; };
 
-        case '<':
-            nrAngles++;
-            break;
-
-        case '>':
-            nrAngles--;
-            break;
+    const char *start = name.data();
+    for (const char *p = start; *p; ++p) {
+        if (ispunct(*p) && *p != '_') {
+            if (*p != ':') {
+                res.append(start, p + 1);
+            }
+            start = p + 1;
         }
-        data++;
     }
+    res.append(start);
 
     return res;
 }
@@ -143,7 +137,7 @@ const ScName &PlantUmlGenerator::alias(const ScName &name)
 void PlantUmlGenerator::beginState(std::ostream &output, std::string &indent, const ScName &name,
                                    const ScName &nameAlias)
 {
-    const ScName nameShort = removePrefix(name);
+    const ScName nameShort = removeNamespaces(name);
 
     if (isHighlighted(name)) {
         output << indent << "state \"" << nameShort << "\" as " << nameAlias << " #IndianRed {\n";
@@ -169,7 +163,7 @@ void PlantUmlGenerator::historyPseudoState(std::ostream &output, const std::stri
 void PlantUmlGenerator::deferralLink(std::ostream &output, std::string &indent,
                                      const ScName &stateAlias, const ScName &eventName)
 {
-    const ScName eventNameShort = removePrefix(eventName);
+    const ScName eventNameShort = removeNamespaces(eventName);
 
     if (isHighlighted(eventName)) {
         output << indent << stateAlias << " : * <b>" << eventNameShort << "</b>\n";
@@ -195,9 +189,9 @@ void PlantUmlGenerator::transitionLink(std::ostream &output, std::string &indent
         }
 
         if (isHighlighted(eventName)) {
-            output << "<b>" << removePrefix(eventName) << "</b>\\n";
+            output << "<b>" << removeNamespaces(eventName) << "</b>\\n";
         } else {
-            output << removePrefix(eventName) << "\\n";
+            output << removeNamespaces(eventName) << "\\n";
         }
     }
 
