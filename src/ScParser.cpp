@@ -138,7 +138,9 @@ bool ScParser::parseFunctionCall(char *&data)
     // boost::statechart::detail::safe_reaction_result
     //     boost::statechart::simple_state<...>::transit<*state-name*>()
 
-    expectStartsWith(data, "boost::statechart::detail::safe_reaction_result ");
+    if (!expectStartsWith(data, "boost::statechart::detail::safe_reaction_result ")) {
+        expectStartsWith(data, "boost::statechart::detail::reaction_result ");
+    }
     if (expectStartsWith(data, "boost::statechart::simple_state<")) {
         matchAngleArgument(data, true);
         if (expectStartsWith(data, "::transit<")) {

@@ -7,7 +7,7 @@
 ##
 
 cmake_minimum_required(VERSION 3.10)
-project(bosce VERSION 1.3 LANGUAGES CXX)
+project(bosce VERSION 1.3.1 LANGUAGES CXX)
 
 enable_testing()
 
