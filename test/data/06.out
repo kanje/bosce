@@ -1,0 +1,19 @@
+@startuml
+note "Plinio::OtherStateMachine\nGenerated on 00.00.0000" as NoteGenerated #A2F2A2
+[*] --> 2
+  state "StateA" as 2 {
+  }
+  2-->2 : EventA\n
+  2-->3 : EventB\n
+  2-->4 : EventC\n
+  state "StateB" as 3 {
+  }
+  3-->2 : EventA\n
+  3-->3 : EventB\n
+  3-->4 : EventC\n
+  state "StateC" as 4 {
+  }
+  4-->2 : EventA\n
+  4-->3 : EventB\n
+  4-->4 : EventC\n
+@enduml
