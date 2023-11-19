@@ -16,7 +16,7 @@ class ScParser;
 class ObjDumpParser final
 {
 public:
-    ObjDumpParser(ScParser &scParser);
+    explicit ObjDumpParser(ScParser &scParser);
 
 public:
     void parse(std::istream &input, bool doStripInput);

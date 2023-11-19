@@ -10,8 +10,6 @@
 #include "ParserHelpers.h"
 #include "ScModel.h"
 
-#include <iostream>
-
 ScParser::ScParser(ScModel &model)
     : m_model(model)
     , m_hasCurrentState(false)
@@ -71,6 +69,8 @@ inline char *matchAngleArgument(char *&data, bool skipToEnd = false)
             break;
         case '\0':
             return nullptr;
+        default:
+            break;
         }
         ++data;
     }
@@ -116,17 +116,15 @@ bool ScParser::parseFunctionDecl(char *&data)
         if (expectStartsWith(data, "state_machine<")) {
             parseStateMachine(data);
             return true;
-        } else {
-            // boost::statechart::simple_state<fsm::NotStarted, fsm::StateMachine, ...
-            if (expectStartsWith(data, "simple_state<")) {
-                parseSimpleState(data);
-                return true;
-            }
+        }
+        // boost::statechart::simple_state<fsm::NotStarted, fsm::StateMachine, ...
+        if (expectStartsWith(data, "simple_state<")) {
+            parseSimpleState(data);
+            return true;
         }
         return false;
-    } else {
-        return parseReactMethod(data);
     }
+    return parseReactMethod(data);
 }
 
 bool ScParser::parseFunctionCall(char *&data)
@@ -186,7 +184,7 @@ static ScTargetList parseInitialSubstateList(char *mplList)
             list.push_back(parseStateHistory(substate));
         }
     } else {
-        list.push_back({mplList});
+        list.emplace_back(mplList);
     }
 
     return list;

@@ -55,11 +55,13 @@ bool ObjDumpParser::parseFunctionDecl(char *&data, std::size_t size)
 {
     char *const endOfData = data + size - 2;
 
-    if (!(expectAddress(data) && expectString(data, " <")))
+    if (!(expectAddress(data) && expectString(data, " <"))) {
         return false;
+    }
 
-    if (!eqString(endOfData, ">:"))
+    if (!eqString(endOfData, ">:")) {
         return false;
+    }
     *endOfData = 0;
 
     return m_scParser.parseFunctionDecl(data);
@@ -69,15 +71,17 @@ inline bool expectAsmBytes(char *&data)
 {
     for (int i = 0; i < 7; i++) {
         if (!(isxdigit(data[0]) && isxdigit(data[1]) && isspace(data[2]))) {
-            if (i == 0)
+            if (i == 0) {
                 return false;
+            }
             break;
         }
         data += 3;
     }
 
-    while (isspace(*data))
+    while (isspace(*data)) {
         ++data;
+    }
     return true;
 }
 
@@ -89,11 +93,13 @@ bool ObjDumpParser::parseFunctionCall(char *&data, std::size_t size)
 
     if (!(expectAddress(data) && expectString(data, ":\t") && expectAsmBytes(data)
           && (expectString(data, "callq  ") || expectString(data, "call  ")) && expectAddress(data)
-          && expectString(data, " <")))
+          && expectString(data, " <"))) {
         return false;
+    }
 
-    if (!eqString(endOfData, ">"))
+    if (!eqString(endOfData, ">")) {
         return false;
+    }
 
     return m_scParser.parseFunctionCall(data);
 }
