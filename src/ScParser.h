@@ -13,7 +13,7 @@
 class ScParser final
 {
 public:
-    ScParser(ScModel &model);
+    explicit ScParser(ScModel &model);
 
 public:
     bool parseFunctionDecl(char *&data);

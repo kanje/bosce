@@ -19,7 +19,7 @@ static void print(std::ostream &output, const ScHistoryState &historyState) noex
 
 static void print(std::ostream &output, const ScRegionList &regions) noexcept
 {
-    if (regions.size() > 0) {
+    if (!regions.empty()) {
         std::string indent;
         if (regions.size() > 1) {
             output << "  regions:\n";

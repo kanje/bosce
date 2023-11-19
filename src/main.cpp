@@ -17,6 +17,7 @@
 
 #include <boost/process.hpp>
 #include <boost/program_options.hpp>
+#include <fstream>
 #include <iostream>
 #include <memory>
 
@@ -29,10 +30,10 @@ struct Settings
     std::string stmName;
     std::string generatorName;
     std::vector<std::string> highlightNameList;
-    bool isUseObjdump;
-    bool isExtractObjdump;
-    bool isStripObjdump;
-    bool isListStms;
+    bool isUseObjdump = false;
+    bool isExtractObjdump = false;
+    bool isStripObjdump = false;
+    bool isListStms = false;
 };
 
 static bool parseOptions(Settings &settings, int argc, char *argv[])
@@ -64,11 +65,11 @@ static bool parseOptions(Settings &settings, int argc, char *argv[])
     po::options_description oDesc;
     oDesc.add(oHidden).add(oVisible);
 
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(oDesc).positional(poDesc).run(), vm);
-    po::notify(vm);
+    po::variables_map vmap;
+    po::store(po::command_line_parser(argc, argv).options(oDesc).positional(poDesc).run(), vmap);
+    po::notify(vmap);
 
-    auto isSpecified = [&vm](const char *optName) { return vm.count(optName) > 0; };
+    auto isSpecified = [&vmap](const char *optName) { return vmap.count(optName) > 0; };
 
     if (isSpecified("help")) {
         std::cout << "bosce: BOost State Chart Extractor (from objdump)\n\n"

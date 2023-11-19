@@ -109,7 +109,7 @@ void PlantUmlGenerator::generate(std::ostream &output, const ScName &name, int i
     // Transitions:
     for (const auto &[target, eventNames] : state.transitions) {
         bool isTransitionHighlighted = false;
-        for (auto &eventName : eventNames) {
+        for (const auto &eventName : eventNames) {
             if (!eventName.empty() && isHighlighted(eventName)) {
                 isTransitionHighlighted = true;
             }

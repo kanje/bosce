@@ -15,7 +15,7 @@
 class AbstractGenerator
 {
 public:
-    AbstractGenerator(const ScModel &model, const ScNameSet &highlightSet = {})
+    explicit AbstractGenerator(const ScModel &model, const ScNameSet &highlightSet = {})
         : m_model(model)
         , m_highlightSet(highlightSet)
     {
